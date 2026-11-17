@@ -11,6 +11,7 @@
 #import "webp.h"
 #import "gif.h"
 #import "mag.h"
+#import "maki.h"
 
 static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -21,7 +22,8 @@ typedef enum {
 	Image_WEBP,
 	Image_GIF,
 	Image_Video,
-	Image_MAG
+	Image_MAG,
+	Image_MAKI
 } ImageType;
 
 ImageType get_type(FILE *f) {
@@ -51,6 +53,11 @@ ImageType get_type(FILE *f) {
 	//MAG
 	if (size >= 6) {
 		if (memcmp(header, "MAKI02", 6) == 0) return Image_MAG;
+	}
+
+	//MAKI
+	if (size >= 6) {
+		if (memcmp(header, "MAKI01", 6) == 0) return Image_MAKI;
 	}
 
 	return Image_Unknown;
@@ -97,6 +104,11 @@ Image *load_image(NSString *path) {
 
 		case Image_MAG: {
 			image = load_mag(f);
+			break;
+		}
+
+		case Image_MAKI: {
+			image = load_maki(f);
 			break;
 		}
 
