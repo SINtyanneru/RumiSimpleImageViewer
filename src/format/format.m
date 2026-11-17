@@ -10,6 +10,7 @@
 #import "jpeg.h"
 #import "webp.h"
 #import "gif.h"
+#import "mag.h"
 
 static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -19,7 +20,8 @@ typedef enum {
 	Image_JPEG,
 	Image_WEBP,
 	Image_GIF,
-	Image_Video
+	Image_Video,
+	Image_MAG
 } ImageType;
 
 ImageType get_type(FILE *f) {
@@ -44,6 +46,11 @@ ImageType get_type(FILE *f) {
 	//GIF
 	if (size >= 6) {
 		if (memcmp(header, "GIF87a", 6) == 0 || memcmp(header, "GIF89a", 6) == 0) return Image_GIF;
+	}
+
+	//MAG
+	if (size >= 6) {
+		if (memcmp(header, "MAKI02", 6) == 0) return Image_MAG;
 	}
 
 	return Image_Unknown;
@@ -85,6 +92,11 @@ Image *load_image(NSString *path) {
 
 		case Image_GIF: {
 			image = load_gif(f);
+			break;
+		}
+
+		case Image_MAG: {
+			image = load_mag(f);
 			break;
 		}
 
