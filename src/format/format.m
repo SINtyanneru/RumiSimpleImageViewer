@@ -1,0 +1,89 @@
+#import <Foundation/Foundation.h>
+#import <stdint.h>
+#import <stdlib.h>
+#import <stdbool.h>
+
+#import "../rsiv.h"
+#import "../testpattern.h"
+
+#import "png.h"
+#import "jpeg.h"
+#import "webp.h"
+
+static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+
+typedef enum {
+	Image_Unknown,
+	Image_PNG,
+	Image_JPEG,
+	Image_WEBP,
+	Image_GIF
+} ImageType;
+
+ImageType get_type(FILE *f) {
+	uint8_t header[12] = {0};
+	size_t size = fread(header, 1, sizeof(header), f);
+
+	//PNG
+	if (size >= 8) {
+		if (memcmp(header, PNG_MAGIC, 8) == 0) return Image_PNG;
+	}
+
+	//JPEG
+	if (size >= 3) {
+		if (header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF) return Image_JPEG;
+	}
+
+	//WebP (RIFF)
+	if (size >= 12) {
+		if (memcmp(header, "RIFF", 4) == 0 && memcmp(header + 8, "WEBP", 4) == 0) return Image_WEBP;
+	}
+
+	return Image_Unknown;
+}
+
+Image *load_image(NSString *path) {
+	Image *image = NULL;
+
+	FILE *f = fopen([path UTF8String], "rb");
+	if (f == false) {
+		image = malloc(sizeof(Image));
+		image->width = 1920;
+		image->height = 1440;
+		image->data = malloc(image->width * image->height * sizeof(RGBA));
+		draw_fubk(image);
+		return image;
+	}
+
+	ImageType type = get_type(f);
+	rewind(f);
+
+	switch (type) {
+		case Image_PNG: {
+			image = load_png(f);
+			break;
+		}
+
+		case Image_JPEG: {
+			image = load_jpeg(f);
+			break;
+		}
+
+		case Image_WEBP: {
+			image = load_webp(f);
+			break;
+		}
+
+		default: {
+			image = malloc(sizeof(Image));
+			image->width = 1920;
+			image->height = 1440;
+			image->data = malloc(image->width * image->height * sizeof(RGBA));
+			draw_fubk(image);
+		}
+	}
+
+	fclose(f);
+
+	return image;
+}
