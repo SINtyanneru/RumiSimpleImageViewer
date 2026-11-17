@@ -6,6 +6,6 @@ clang \
 	\
 	src/format/*.m \
 	\
-	-lglfw -lGLEW -lGL -lpng -pthread -ljpeg -lwebp \
+	-lglfw -lGLEW -lGL -lpng -pthread -ljpeg -lwebp -lgif -lwebpdemux \
 	$(gnustep-config --objc-flags) -I /usr/lib/gcc/x86_64-linux-gnu/14/include/ $(gnustep-config --base-libs) \
 	-o rsiv.out

@@ -15,7 +15,7 @@ typedef struct {
 	RGBA *data;
 
 	uint64_t count;
-	uint64_t fps;
+	double fps;
 } Image;
 
 typedef struct {

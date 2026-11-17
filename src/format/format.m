@@ -9,6 +9,7 @@
 #import "png.h"
 #import "jpeg.h"
 #import "webp.h"
+#import "gif.h"
 
 static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -17,7 +18,8 @@ typedef enum {
 	Image_PNG,
 	Image_JPEG,
 	Image_WEBP,
-	Image_GIF
+	Image_GIF,
+	Image_Video
 } ImageType;
 
 ImageType get_type(FILE *f) {
@@ -39,6 +41,11 @@ ImageType get_type(FILE *f) {
 		if (memcmp(header, "RIFF", 4) == 0 && memcmp(header + 8, "WEBP", 4) == 0) return Image_WEBP;
 	}
 
+	//GIF
+	if (size >= 6) {
+		if (memcmp(header, "GIF87a", 6) == 0 || memcmp(header, "GIF89a", 6) == 0) return Image_GIF;
+	}
+
 	return Image_Unknown;
 }
 
@@ -50,6 +57,8 @@ Image *load_image(NSString *path) {
 		image = malloc(sizeof(Image));
 		image->width = 1920;
 		image->height = 1440;
+		image->count = 1;
+		image->fps = 0;
 		image->data = malloc(image->width * image->height * sizeof(RGBA));
 		draw_fubk(image);
 		return image;
@@ -74,10 +83,17 @@ Image *load_image(NSString *path) {
 			break;
 		}
 
+		case Image_GIF: {
+			image = load_gif(f);
+			break;
+		}
+
 		default: {
 			image = malloc(sizeof(Image));
 			image->width = 1920;
 			image->height = 1440;
+			image->count = 1;
+			image->fps = 0;
 			image->data = malloc(image->width * image->height * sizeof(RGBA));
 			draw_fubk(image);
 		}

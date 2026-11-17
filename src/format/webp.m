@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#include <webp/decode.h>
+#include <webp/demux.h>
 
 #import "../rsiv.h"
 
@@ -25,37 +25,68 @@ Image *load_webp(FILE *f) {
 		return NULL;
 	}
 
-	int width;
-	int height;
+	WebPAnimDecoderOptions opt;
+	WebPAnimDecoderOptionsInit(&opt);
 
-	if (!WebPGetInfo(buffer, file_size, &width, &height)) {
+	WebPData webp_data = { buffer, (size_t)file_size };
+	WebPAnimDecoder *dec = WebPAnimDecoderNew(&webp_data, &opt);
+
+	if (dec == NULL) {
 		free(buffer);
 		return NULL;
 	}
 
-	uint8_t *decoded = WebPDecodeRGBA(buffer, file_size, &width, &height);
+	WebPAnimInfo info;
+	if (!WebPAnimDecoderGetInfo(dec, &info)) {
+		WebPAnimDecoderDelete(dec);
+		free(buffer);
+		return NULL;
+	}
 
+	uint32_t w = info.canvas_width;
+	uint32_t h = info.canvas_height;
+	int32_t count = (int32_t)info.frame_count;
+
+	if (w == 0 || h == 0 || count == 0 ||
+		(size_t)w > SIZE_MAX / 4 / (size_t)h / (size_t)count) {
+		WebPAnimDecoderDelete(dec);
+		free(buffer);
+		return NULL;
+	}
+
+	RGBA *data = malloc((size_t)w * h * count * sizeof(RGBA));
+
+	if (data == NULL) {
+		WebPAnimDecoderDelete(dec);
+		free(buffer);
+		return NULL;
+	}
+
+	double fps = 0;
+
+	for (int32_t i = 0; i < count; i++) {
+		uint8_t *frame = NULL;
+		int timestamp = 0;
+
+		if (!WebPAnimDecoderGetNext(dec, &frame, &timestamp)) {
+			free(data);
+			WebPAnimDecoderDelete(dec);
+			free(buffer);
+			return NULL;
+		}
+
+		memcpy(data + (size_t)i * w * h, frame, (size_t)w * h * sizeof(RGBA));
+
+		//先頭フレームの表示時間（ミリ秒）→秒
+		if (i == 0)
+			fps = timestamp / 1000.0;
+	}
+
+	WebPAnimDecoderDelete(dec);
 	free(buffer);
 
-	if (decoded == NULL) {
-		return NULL;
-	}
-
-	if ((size_t)width > SIZE_MAX / 4 / (size_t)height) {
-		WebPFree(decoded);
-		return NULL;
-	}
-
-	size_t data_size = (size_t)width * height * sizeof(RGBA);
-
-	RGBA *data = malloc(data_size);
-	if (data == NULL) {
-		WebPFree(decoded);
-		return NULL;
-	}
-
-	memcpy(data, decoded, data_size);
-	WebPFree(decoded);
+	if (count > 1 && fps == 0)
+		fps = 0.1;
 
 	Image *img = malloc(sizeof(Image));
 	if (img == NULL) {
@@ -63,11 +94,11 @@ Image *load_webp(FILE *f) {
 		return NULL;
 	}
 
-	img->width = width;
-	img->height = height;
+	img->width = (int32_t)w;
+	img->height = (int32_t)h;
 	img->data = data;
-	img->count = 1;
-	img->fps = 0;
+	img->count = count;
+	img->fps = (count > 1) ? fps : 0;
 
 	return img;
 }

@@ -236,6 +236,8 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 	uint32_t last_version = 0;
 	uint32_t texture_w = img->width;
 	uint32_t texture_h = img->height;
+	double animation_time = glfwGetTime();
+	int64_t cur_frame = -1;
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwGetFramebufferSize(window, &fw, &fh);
@@ -260,7 +262,22 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 
 			pthread_mutex_unlock(&shared_image->lock);
 
+			//初期化
+			animation_time = glfwGetTime();
+			cur_frame = -1;
 			reset_view(img);
+		}
+
+		//アニメーション
+		if (img->fps != 0 && img->count > 1) {
+			double elapsed = glfwGetTime() - animation_time;
+			int32_t frame = (int32_t)(elapsed / img->fps) % img->count;
+			if (frame != cur_frame) {
+				cur_frame = frame;
+				const uint8_t *src = (const uint8_t *)(img->data + (size_t)frame * img->width * img->height);
+				glBindTexture(GL_TEXTURE_2D, texture);
+				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->width, img->height, GL_RGBA, GL_UNSIGNED_BYTE, src);
+			}
 		}
 
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
