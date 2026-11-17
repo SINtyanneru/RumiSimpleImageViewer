@@ -13,6 +13,9 @@ typedef struct {
 	uint64_t width;
 	uint64_t height;
 	RGBA *data;
+
+	uint64_t count;
+	uint64_t fps;
 } Image;
 
 typedef struct {
@@ -24,7 +27,7 @@ typedef struct {
 	//画像データ
 	pthread_mutex_t lock;
 	uint32_t version;
-	Image image;
+	Image *image;
 
 	DD dd;
 } SharedImage;

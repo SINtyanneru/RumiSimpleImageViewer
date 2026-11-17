@@ -198,4 +198,7 @@ void draw_fubk(Image *img) {
             img->data[y * img->width + x] = c;
         }
     }
+
+	img->count = 1;
+	img->fps = 0;
 }

@@ -13,7 +13,7 @@ static NSMutableArray *global_path_list;
 void shared_image_update(SharedImage *shared_image, Image *img) {
 	pthread_mutex_lock(&shared_image->lock);
 
-	shared_image->image = *img;
+	shared_image->image = img;
 
 	atomic_fetch_add(&shared_image->version, 1);
 
@@ -32,7 +32,7 @@ void check_event_dd(SharedImage *shared_image) {
 		NSMutableArray *path_list = shared_image->dd.path_list;
 
 		for (NSString *path in path_list) {
-			shared_image->image = *load_image(path);
+			shared_image->image = load_image(path);
 			shared_image->version += 1;
 
 			[global_path_list addObject:path];
@@ -47,6 +47,8 @@ void check_event_dd(SharedImage *shared_image) {
 
 void *chinko_main(void *p) {
 	SharedImage *shared_image = (SharedImage *)p;
+
+	shared_image->image = load_image(@"");
 
 	//初期化
 	global_path_list = [[NSMutableArray alloc] init];

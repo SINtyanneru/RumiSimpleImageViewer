@@ -103,6 +103,8 @@ Image *load_png(FILE *f) {
 	img->data = memory.data;
 	img->width = w;
 	img->height = h;
+	img->count = 1;
+	img->fps = 0;
 
 	return img;
 }

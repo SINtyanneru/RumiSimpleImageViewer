@@ -245,7 +245,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		if (v != last_version) {
 			pthread_mutex_lock(&shared_image->lock);
 
-			memcpy(img, &shared_image->image, sizeof(Image));
+			memcpy(img, shared_image->image, sizeof(Image));
 
 			glBindTexture(GL_TEXTURE_2D, texture);
 			if (img->width != texture_w || img->height != texture_h) {
@@ -286,7 +286,7 @@ void gpuui_main(SharedImage *shared_image) {
 
 	//初回ロード
 	pthread_mutex_lock(&shared_image->lock);
-	memcpy(&img, &shared_image->image, sizeof(Image));
+	memcpy(&img, shared_image->image, sizeof(Image));
 	pthread_mutex_unlock(&shared_image->lock);
 
 	//初期化

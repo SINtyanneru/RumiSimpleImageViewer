@@ -21,8 +21,6 @@ int main(void) {
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
 	shared_image->dd.path_list = [[NSMutableArray alloc] init];
 
-	shared_image->image = *load_image(@"");
-
 	//別スレッドでちんこを開始
 	pthread_t ui_thread;
 	pthread_create(&ui_thread, NULL, chinko_main, shared_image);

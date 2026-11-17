@@ -66,6 +66,8 @@ Image *load_webp(FILE *f) {
 	img->width = width;
 	img->height = height;
 	img->data = data;
+	img->count = 1;
+	img->fps = 0;
 
 	return img;
 }
