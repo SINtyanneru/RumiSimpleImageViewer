@@ -20,7 +20,6 @@ clang \
 	src/testpattern.m \
 	src/chinko.m \
 	src/thumbnail.m \
-	src/macopen.m \
 	src/UnFoundation.m \
 	\
 	src/format/*.m \

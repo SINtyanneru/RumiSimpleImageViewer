@@ -12,8 +12,29 @@
 #import "gpuui.h"
 #import "chinko.h"
 #import "thumbnail.h"
+
 #ifdef __APPLE__
-#import "macopen.h"
+#import <Cocoa/Cocoa.h>
+
+@interface AppDelegate : NSObject <NSApplicationDelegate>
+@end
+
+@implementation AppDelegate
+
+//「このアプリで開く」やDock へのドロップで呼ばれる
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
+	for (NSURL *url in urls) {
+		if (!url.isFileURL) {
+			continue;
+		}
+
+		//ファイルパス
+		NSString *path = url.path;
+		NSLog(@"受け取ったパス: %@", path);
+	}
+}
+
+@end
 #endif
 
 int main(int argc, char **argv) {
@@ -41,13 +62,17 @@ int main(int argc, char **argv) {
 	shared_image->dd.path_list = un_list_create();
 
 #ifdef __APPLE__
-	//Finder の関連付けから開かれたときの受け口（macOS は argv ではなく Apple Event で渡してくる）
-	rsiv_mac_install_open_handler(shared_image);
+	@autoreleasepool {
+		NSApplication *app = [NSApplication sharedApplication];
+		AppDelegate *delegate = [[AppDelegate alloc] init];
+		app.delegate = delegate;
+		[app setActivationPolicy:NSApplicationActivationPolicyRegular];
+		[app run];
+	}
 #endif
 
 	//引数
-	if (un_arg_count() >= 2)
-		un_list_add(shared_image->dd.path_list, un_arg_get(1));
+	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
 
 	//タイトルバーを初期化
 	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
