@@ -12,3 +12,4 @@
 * mag.*				→	MAG
 * maki.*			→	MAKI
 * bmp.*				→	BMP
+* pi.*				→	PI

@@ -13,6 +13,7 @@
 #import "mag.h"
 #import "maki.h"
 #import "bmp.h"
+#import "pi.h"
 
 static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -25,7 +26,8 @@ typedef enum {
 	Image_Video,
 	Image_MAG,
 	Image_MAKI,
-	Image_BMP
+	Image_BMP,
+	Image_PI
 } ImageType;
 
 ImageType get_type(FILE *f) {
@@ -65,6 +67,11 @@ ImageType get_type(FILE *f) {
 	//BMP
 	if (size >= 2) {
 		if (header[0] == 'B' && header[1] == 'M') return Image_BMP;
+	}
+
+	//Pi
+	if (size >= 2) {
+		if (header[0] == 'P' && header[1] == 'i') return Image_PI;
 	}
 
 	return Image_Unknown;
@@ -121,6 +128,11 @@ Image *load_image(NSString *path) {
 
 		case Image_BMP: {
 			image = load_bmp(f);
+			break;
+		}
+
+		case Image_PI: {
+			image = load_pi(f);
 			break;
 		}
 
