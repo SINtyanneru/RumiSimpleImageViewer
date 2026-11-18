@@ -14,6 +14,7 @@
 #import "maki.h"
 #import "bmp.h"
 #import "pi.h"
+#import "svg.h"
 
 static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -27,7 +28,8 @@ typedef enum {
 	Image_MAG,
 	Image_MAKI,
 	Image_BMP,
-	Image_PI
+	Image_PI,
+	Image_SVG
 } ImageType;
 
 ImageType get_type(FILE *f) {
@@ -74,22 +76,27 @@ ImageType get_type(FILE *f) {
 		if (header[0] == 'P' && header[1] == 'i') return Image_PI;
 	}
 
+	//SVG（XMLテキストなので先頭2KB以内に<svgがあるかで判定）
+	{
+		uint8_t buf[2048];
+		fseek(f, 0, SEEK_SET);
+		size_t n = fread(buf, 1, sizeof(buf), f);
+		for (size_t i = 0; i + 4 <= n; i++) {
+			if (memcmp(buf + i, "<svg", 4) == 0) return Image_SVG;
+		}
+	}
+
 	return Image_Unknown;
 }
 
-Image *load_image(NSString *path) {
+static Image *load_image_impl(NSString *path, bool *want_fallback) {
 	Image *image = NULL;
+	*want_fallback = false;
 
 	FILE *f = fopen([path UTF8String], "rb");
 	if (f == false) {
-		image = malloc(sizeof(Image));
-		image->width = 1920;
-		image->height = 1440;
-		image->count = 1;
-		image->fps = 0;
-		image->data = malloc(image->width * image->height * sizeof(RGBA));
-		draw_fubk(image);
-		return image;
+		*want_fallback = true;
+		return NULL;
 	}
 
 	ImageType type = get_type(f);
@@ -136,18 +143,43 @@ Image *load_image(NSString *path) {
 			break;
 		}
 
+		case Image_SVG: {
+			image = load_svg(f);
+			break;
+		}
+
 		default: {
-			image = malloc(sizeof(Image));
-			image->width = 1920;
-			image->height = 1440;
-			image->count = 1;
-			image->fps = 0;
-			image->data = malloc(image->width * image->height * sizeof(RGBA));
-			draw_fubk(image);
+			*want_fallback = true;
 		}
 	}
 
 	fclose(f);
 
 	return image;
+}
+
+static Image *make_fallback_image() {
+	Image *image = malloc(sizeof(Image));
+	image->width = 1920;
+	image->height = 1440;
+	image->count = 1;
+	image->fps = 0;
+	image->data = malloc(image->width * image->height * sizeof(RGBA));
+	draw_fubk(image);
+	return image;
+}
+
+Image *load_image(NSString *path) {
+	bool want_fallback = false;
+	Image *image = load_image_impl(path, &want_fallback);
+
+	if (image == NULL && want_fallback)
+		image = make_fallback_image();
+
+	return image;
+}
+
+Image *load_image_strict(NSString *path) {
+	bool want_fallback = false;
+	return load_image_impl(path, &want_fallback);
 }
