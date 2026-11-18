@@ -30,7 +30,11 @@
 
 		//ファイルパス
 		NSString *path = url.path;
-		NSLog(@"受け取ったパス: %@", path);
+
+		NSAlert *alert = [[NSAlert alloc] init];
+		alert.messageText = message;
+		[alert addButtonWithTitle:path];
+		[alert runModal];
 	}
 }
 
