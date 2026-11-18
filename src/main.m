@@ -1,7 +1,7 @@
-#include "Foundation/NSArray.h"
-#import <Foundation/Foundation.h>
+#import "UnFoundation.h"
 #import <stdlib.h>
 #import <stdio.h>
+#import <string.h>
 #import <pthread.h>
 #import <stdbool.h>
 #import <stdatomic.h>
@@ -13,14 +13,19 @@
 #import "chinko.h"
 #import "thumbnail.h"
 
-int main(void) {
+int main(int argc, char **argv) {
+#if !defined(__linux__) && !defined(__APPLE__)
+	//UnFoundation.c の引数受け口へ渡しておく（Windows では使われない）
+	rsiv_argc = argc;
+	rsiv_argv = argv;
+#endif
+
 	//サムネイル生成モード（ファイルマネージャーから呼ばれる、ウィンドウは開かない）
 	{
-		NSArray<NSString *> *args = [[NSProcessInfo processInfo] arguments];
-		if ([args count] >= 2 && [[args objectAtIndex:1] isEqualToString:@"--thumbnail"]) {
-			if ([args count] != 5)
+		if (un_arg_count() >= 2 && strcmp(un_arg_get(1), "--thumbnail") == 0) {
+			if (un_arg_count() != 5)
 				return 1;
-			return make_thumbnail([args objectAtIndex:2], [args objectAtIndex:3], [[args objectAtIndex:4] intValue]);
+			return make_thumbnail(un_arg_get(2), un_arg_get(3), atoi(un_arg_get(4)));
 		}
 	}
 
@@ -30,14 +35,11 @@ int main(void) {
 
 	//ドラドロを初期化
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
-	shared_image->dd.path_list = [[NSMutableArray alloc] init];
+	shared_image->dd.path_list = un_list_create();
 
 	//引数
-	NSArray<NSString *> *args = [[NSProcessInfo processInfo] arguments];
-	if ([args count] >= 2) {
-		NSString *path = [args objectAtIndex:1];
-		[shared_image->dd.path_list addObject:path];
-	}
+	if (un_arg_count() >= 2)
+		un_list_add(shared_image->dd.path_list, un_arg_get(1));
 
 	//タイトルバーを初期化
 	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
@@ -45,7 +47,7 @@ int main(void) {
 	shared_image->title_bar.version = 0;
 
 	//デフォルト画像を初期化
-	shared_image->image = load_image(@"");
+	shared_image->image = load_image("");
 
 	//別スレッドでちんこを開始
 	pthread_t ui_thread;

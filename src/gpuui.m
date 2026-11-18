@@ -1,6 +1,5 @@
 #pragma clang diagnostic ignored "-Wc23-extensions"
 
-#import <Foundation/Foundation.h>
 #import <GL/glew.h>
 #import <GL/gl.h>
 #import <pthread.h>
@@ -150,18 +149,15 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
 void drop_callback(GLFWwindow *window, int count, const char **pathlp) {
 	SharedImage *shared_image = glfwGetWindowUserPointer(window);
 
-	@autoreleasepool {
-		pthread_mutex_lock(&shared_image->dd.lock);
+	pthread_mutex_lock(&shared_image->dd.lock);
 
-		[shared_image->dd.path_list removeAllObjects];
+	un_list_clear(shared_image->dd.path_list);
 
-		for (int i = 0; i < count; i++) {
-			NSString *path = [NSString stringWithUTF8String:pathlp[i]];
-			if (path != NULL) [shared_image->dd.path_list addObject: path];
-		}
-
-		pthread_mutex_unlock(&shared_image->dd.lock);
+	for (int i = 0; i < count; i++) {
+		if (pathlp[i] != NULL) un_list_add(shared_image->dd.path_list, pathlp[i]);
 	}
+
+	pthread_mutex_unlock(&shared_image->dd.lock);
 }
 
 BOOL create_window() {
@@ -280,7 +276,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		glfwGetFramebufferSize(window, &fw, &fh);
 
 		//画像の更新検知
-		uint32_t image_v = atomic_load(&shared_image->version);
+		uint32_t image_v = __atomic_load_n(&shared_image->version, __ATOMIC_SEQ_CST);
 		if (image_v != image_last_version) {
 			pthread_mutex_lock(&shared_image->lock);
 
@@ -295,7 +291,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->width, img->height, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
 			}
 
-			image_last_version = atomic_load(&shared_image->version);
+			image_last_version = __atomic_load_n(&shared_image->version, __ATOMIC_SEQ_CST);
 
 			pthread_mutex_unlock(&shared_image->lock);
 
@@ -306,13 +302,13 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		}
 
 		//画像の更新検知
-		uint32_t title_v = atomic_load(&shared_image->title_bar.version);
+		uint32_t title_v = __atomic_load_n(&shared_image->title_bar.version, __ATOMIC_SEQ_CST);
 		if (title_v != title_last_version) {
 			pthread_mutex_lock(&shared_image->title_bar.lock);
 
 			glfwSetWindowTitle(window, shared_image->title_bar.title);
 
-			title_last_version = atomic_load(&shared_image->title_bar.version);
+			title_last_version = __atomic_load_n(&shared_image->title_bar.version, __ATOMIC_SEQ_CST);
 
 			pthread_mutex_unlock(&shared_image->title_bar.lock);
 		}
