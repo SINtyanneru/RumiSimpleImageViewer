@@ -5,9 +5,10 @@
 
 どれがどれ？
 =============
-* png.*→PNG
-* jpeg.*→JPEG
-* gif.*→GIF
-* webp.*→WebP
-* mag.*→MAG
-* maki.*→MAKI
+* png.*				→	PNG
+* jpeg.*			→	JPEG
+* gif.*				→	GIF
+* webp.*			→	WebP
+* mag.*				→	MAG
+* maki.*			→	MAKI
+* bmp.*				→	BMP
