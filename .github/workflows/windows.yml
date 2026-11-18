@@ -37,6 +37,7 @@ jobs:
         run: |
           mkdir dist
           cp rsiv.exe dist/
+          cp install_windows.bat dist/
           ldd rsiv.exe | grep -o '/mingw64/bin/[^ ]*\.dll' | sort -u | while read d; do cp "$d" dist/; done
           ls dist
 
