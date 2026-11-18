@@ -1,7 +1,12 @@
 #pragma clang diagnostic ignored "-Wc23-extensions"
 
+#ifdef __APPLE__
+//macOS では GLEW は使わない（glfw3.h に <OpenGL/gl3.h> を読ませる）
+#define GLFW_INCLUDE_GLCOREARB
+#else
 #import <GL/glew.h>
 #import <GL/gl.h>
+#endif
 #import <pthread.h>
 #import <GLFW/glfw3.h>
 #import <stdio.h>
@@ -164,6 +169,10 @@ BOOL create_window() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+	//macOS でコアプロファイルを作るには前方互換の指定が要る
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
 	window = glfwCreateWindow(800, 600, "RSIV - んご", NULL, NULL);
 	if (!window) {
@@ -175,11 +184,13 @@ BOOL create_window() {
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
+#ifndef __APPLE__
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "GLEW init failed\n");
 		return NO;
 	}
+#endif
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetScrollCallback(window, scroll_callback);
