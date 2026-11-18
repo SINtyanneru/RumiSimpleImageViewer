@@ -18,6 +18,9 @@
 
 #import "rsiv.h"
 #import "format/format.h"
+#ifdef __APPLE__
+#import "macopen.h"
+#endif
 
 #define VIEW_ZOOM_DEFAULT 1.0f
 #define VIEW_OFFSET_X 0.0f
@@ -368,6 +371,12 @@ void gpuui_main(SharedImage *shared_image) {
 		exit(1);
 		return;
 	}
+
+#ifdef __APPLE__
+	//Finder の関連付けから開かれたときの受け口
+	//NSApplication（glfwInit で生成）が Apple Event のハンドラを自前で登録して上書きするので、登録は glfwInit の後に行うこと
+	rsiv_mac_install_open_handler(shared_image);
+#endif
 
 	//ウィンドウを作る
 	if (create_window() == NO) {
