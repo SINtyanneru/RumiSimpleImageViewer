@@ -21,6 +21,13 @@ int main(void) {
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
 	shared_image->dd.path_list = [[NSMutableArray alloc] init];
 
+	//引数
+	NSArray<NSString *> *args = [[NSProcessInfo processInfo] arguments];
+	if ([args count] >= 2) {
+		NSString *path = [args objectAtIndex:1];
+		[shared_image->dd.path_list addObject:path];
+	}
+
 	//タイトルバーを初期化
 	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
 	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "%s", "RSIV - んご");
