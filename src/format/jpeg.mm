@@ -1,6 +1,12 @@
 #import <stdio.h>
 #import <stdlib.h>
 #import <stdint.h>
+#ifdef _WIN32
+//MSYS2のjmorecfg.hは先頭でshlwapi.hを読むが、shlwapi.hはinterface等の定義（windows.h経由のobjbase.h）が前提なので、先にwindows.hを読んでおく
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#import <windows.h>
+#endif
 #import <jpeglib.h>
 
 #import "../rsiv.h"
@@ -24,7 +30,7 @@ Image *load_jpeg(FILE *f) {
 	uint64_t width = cinfo.output_width;
 	uint64_t height = cinfo.output_height;
 
-	RGBA *data = malloc(width * height * sizeof(RGBA));
+	RGBA *data = (RGBA *)malloc(width * height * sizeof(RGBA));
 	if (data == NULL) {
 		jpeg_finish_decompress(&cinfo);
 		jpeg_destroy_decompress(&cinfo);
@@ -32,7 +38,7 @@ Image *load_jpeg(FILE *f) {
 		return NULL;
 	}
 
-	uint8_t *row = malloc(width * 3);
+	uint8_t *row = (uint8_t *)malloc(width * 3);
 	if (row == NULL) {
 		free(data);
 		jpeg_finish_decompress(&cinfo);
@@ -63,7 +69,7 @@ Image *load_jpeg(FILE *f) {
 	jpeg_finish_decompress(&cinfo);
 	jpeg_destroy_decompress(&cinfo);
 
-	Image *img = malloc(sizeof(Image));
+	Image *img = (Image *)malloc(sizeof(Image));
 	img->width = width;
 	img->height = height;
 	img->data = data;
