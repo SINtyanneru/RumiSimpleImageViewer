@@ -32,8 +32,16 @@ jobs:
         shell: msys2 {0}
         run: ./build_windows.sh
 
+      - name: Bundle DLLs
+        shell: msys2 {0}
+        run: |
+          mkdir dist
+          cp rsiv.exe dist/
+          ldd rsiv.exe | grep -o '/mingw64/bin/[^ ]*\.dll' | sort -u | while read d; do cp "$d" dist/; done
+          ls dist
+
       - name: Upload rsiv.exe
         uses: actions/upload-artifact@v4
         with:
           name: rsiv-windows
-          path: rsiv.exe
+          path: dist
