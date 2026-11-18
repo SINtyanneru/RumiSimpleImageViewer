@@ -10,6 +10,7 @@
 set -e
 
 clang \
+	-fobjc-runtime=gnustep-2.0 \
 	src/main.m \
 	src/gpuui.m \
 	src/testpattern.m \

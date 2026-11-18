@@ -1,5 +1,6 @@
 #import <Foundation/Foundation.h>
 #import <stdint.h>
+#import <stdatomic.h>
 #import <pthread.h>
 
 typedef struct {
@@ -33,13 +34,13 @@ typedef struct {
 typedef struct {
 	pthread_mutex_t lock;
 	char title[256];
-	uint32_t version;
+	_Atomic uint32_t version;
 } TitleBar;
 
 typedef struct {
 	//画像データ
 	pthread_mutex_t lock;
-	uint32_t version;
+	_Atomic uint32_t version;
 	Image *image;
 
 	DD dd;
