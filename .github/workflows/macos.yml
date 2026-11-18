@@ -17,8 +17,14 @@ jobs:
       - name: Build
         run: ./build_macos.sh
 
-      - name: Upload rsiv.out
+      - name: Make dmg
+        run: |
+          mkdir dist
+          cp rsiv.out dist/
+          hdiutil create -volname rsiv -srcfolder dist -ov -format UDZO rsiv-macos.dmg
+
+      - name: Upload dmg
         uses: actions/upload-artifact@v4
         with:
           name: rsiv-macos
-          path: rsiv.out
+          path: rsiv-macos.dmg
