@@ -3,8 +3,12 @@
 #import <stdint.h>
 #ifdef _WIN32
 //MSYS2のjmorecfg.hは先頭でshlwapi.hを読むが、shlwapi.hはinterface等の定義（windows.h経由のobjbase.h）が前提なので、先にwindows.hを読んでおく
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif
 #import <windows.h>
 #endif
 #import <jpeglib.h>

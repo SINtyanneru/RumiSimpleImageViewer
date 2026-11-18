@@ -1,5 +1,6 @@
 //名前が思いつかんかった
 #import <stdlib.h>
+#import <stdio.h>
 #import <stdbool.h>
 #import <pthread.h>
 #import <stdatomic.h>

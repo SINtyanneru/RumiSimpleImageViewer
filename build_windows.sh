@@ -24,7 +24,6 @@ clang \
 	-x objective-c++ \
 	src/format/jpeg.mm \
 	\
-	-x none \
 	-lglfw3 -lglew32 -lopengl32 -lgdi32 -lpng -ljpeg -lwebp -lgif -lwebpdemux -lpthread -lshell32 \
 	$(pkg-config --cflags --libs librsvg-2.0) \
 	-mwindows \
