@@ -8,6 +8,7 @@
 
 #import "rsiv.h"
 #import "thumbnail.h"
+#import "platform.h"
 #import "format/format.h"
 
 //ボックスフィルタで縮小する（拡大はしない）
@@ -97,7 +98,7 @@ static Image *scale_down(Image *src, int size) {
 }
 
 static int save_png(NSString *path, Image *img) {
-	FILE *f = fopen([path UTF8String], "wb");
+	FILE *f = rsiv_fopen([path UTF8String], "wb");
 	if (f == NULL)
 		return 1;
 

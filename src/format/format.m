@@ -5,6 +5,7 @@
 
 #import "../rsiv.h"
 #import "../testpattern.h"
+#import "../platform.h"
 
 #import "png.h"
 #import "jpeg.h"
@@ -93,7 +94,7 @@ static Image *load_image_impl(NSString *path, bool *want_fallback) {
 	Image *image = NULL;
 	*want_fallback = false;
 
-	FILE *f = fopen([path UTF8String], "rb");
+	FILE *f = rsiv_fopen([path UTF8String], "rb");
 	if (f == false) {
 		*want_fallback = true;
 		return NULL;
