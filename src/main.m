@@ -32,8 +32,8 @@
 		NSString *path = url.path;
 
 		NSAlert *alert = [[NSAlert alloc] init];
-		alert.messageText = message;
-		[alert addButtonWithTitle:path];
+		alert.messageText = path;
+		[alert addButtonWithTitle:@"OK"];
 		[alert runModal];
 	}
 }
