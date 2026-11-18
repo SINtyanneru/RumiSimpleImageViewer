@@ -9,19 +9,21 @@ set MSYS2_ROOT=C:\msys64
 set INSTALL_DIR=%LOCALAPPDATA%\Programs\rsiv
 set PROGID=rsiv.Document
 
-if not exist rsiv.exe (
+if not exist "%~dp0rsiv.exe" (
 	echo rsiv.exe ga nai. saki ni build_windows.bat de build shite ne
 	exit /b 1
 )
 
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
-copy /y rsiv.exe "%INSTALL_DIR%\rsiv.exe" >nul
+copy /y "%~dp0rsiv.exe" "%INSTALL_DIR%\rsiv.exe" >nul
 echo copy: rsiv.exe --- %INSTALL_DIR%\rsiv.exe
 
-rem 実行に要る MSYS2 の DLL を一緒にコピーする
-rem （実際に要る物は環境で変わるので、足りないときは ldd rsiv.exe で確認）
+rem 実行に要る DLL を一緒にコピーする
+rem まず、この bat と同じ場所にある DLL（配布物に同梱された物）を全部入れる
+if exist "%~dp0*.dll" copy /y "%~dp0*.dll" "%INSTALL_DIR%\" >nul
+rem 足りない物は MSYS2 から補う（実際に要る物は環境で変わるので、足りないときは ldd rsiv.exe で確認）
 for %%d in (glfw3.dll glew32.dll libpng16-16.dll libjpeg-8.dll libwebp-7.dll libwebpdemux-2.dll libgif-7.dll librsvg-2-2.dll libcairo-2.dll libgobject-2.0-0.dll libglib-2.0-0.dll libgio-2.0-0.dll libwinpthread-1.dll) do (
-	if exist "%MSYS2_ROOT%\mingw64\bin\%%d" copy /y "%MSYS2_ROOT%\mingw64\bin\%%d" "%INSTALL_DIR%\" >nul
+	if not exist "%INSTALL_DIR%\%%d" if exist "%MSYS2_ROOT%\mingw64\bin\%%d" copy /y "%MSYS2_ROOT%\mingw64\bin\%%d" "%INSTALL_DIR%\" >nul
 )
 echo copy: DLLs
 
