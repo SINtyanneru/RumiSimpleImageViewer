@@ -54,6 +54,28 @@ static BOOL view_is_dragging = NO;
 static double view_last_x = 0.0f;
 static double view_last_y = 0.0f;
 
+//表示中の画像サイズ（オフセット制限用）
+static int32_t view_img_w = 0;
+static int32_t view_img_h = 0;
+
+//画像の移動を制限する
+//画像がウィンドウより大きいときは端まで、小さいときはウィンドウの内側まで
+static void clamp_view_offset() {
+	int fw, fh;
+	glfwGetFramebufferSize(window, &fw, &fh);
+
+	float iw = (float)view_img_w * view_zoom;
+	float ih = (float)view_img_h * view_zoom;
+
+	float max_x = fabsf(iw - (float)fw) * 0.5f;
+	float max_y = fabsf(ih - (float)fh) * 0.5f;
+
+	if (view_offset_x > max_x) view_offset_x = max_x;
+	if (view_offset_x < -max_x) view_offset_x = -max_x;
+	if (view_offset_y > max_y) view_offset_y = max_y;
+	if (view_offset_y < -max_y) view_offset_y = -max_y;
+}
+
 //ウィンドウ座標→フレームバッファ座標の比率(HiDPI対策)
 static double pixel_ratio(GLFWwindow *window) {
 	int ww, wh, fw, fh;
@@ -66,6 +88,7 @@ static double pixel_ratio(GLFWwindow *window) {
 //リサイズ時に呼ばれる
 static void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
 	glViewport(0, 0, width, height);
+	clamp_view_offset();
 }
 
 //スクロールで拡大縮小(カーソル位置を中心に)
@@ -89,6 +112,7 @@ static void scroll_callback(GLFWwindow *window, double xoff, double yoff) {
 	view_offset_x = cx - (cx - view_offset_x) * k;
 	view_offset_y = cy - (cy - view_offset_y) * k;
 	view_zoom = new_zoom;
+	clamp_view_offset();
 }
 
 //クリック開始/終了
@@ -111,6 +135,7 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
 		view_offset_y -= (float)((y - view_last_y) * r);
 		view_last_x = x;
 		view_last_y = y;
+		clamp_view_offset();
 	}
 }
 
@@ -214,6 +239,8 @@ void reset_view(Image *img) {
 	view_zoom = VIEW_ZOOM_DEFAULT;
 	view_offset_x = VIEW_OFFSET_X;
 	view_offset_y = VIEW_OFFSET_Y;
+	view_img_w = img->width;
+	view_img_h = img->height;
 
 	int32_t fw;
 	int32_t fh;
