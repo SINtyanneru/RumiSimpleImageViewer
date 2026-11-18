@@ -276,7 +276,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		glfwGetFramebufferSize(window, &fw, &fh);
 
 		//画像の更新検知
-		uint32_t image_v = atomic_load(&shared_image->version);
+		uint32_t image_v = __atomic_load_n(&shared_image->version, __ATOMIC_SEQ_CST);
 		if (image_v != image_last_version) {
 			pthread_mutex_lock(&shared_image->lock);
 
@@ -291,7 +291,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->width, img->height, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
 			}
 
-			image_last_version = atomic_load(&shared_image->version);
+			image_last_version = __atomic_load_n(&shared_image->version, __ATOMIC_SEQ_CST);
 
 			pthread_mutex_unlock(&shared_image->lock);
 
@@ -302,13 +302,13 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		}
 
 		//画像の更新検知
-		uint32_t title_v = atomic_load(&shared_image->title_bar.version);
+		uint32_t title_v = __atomic_load_n(&shared_image->title_bar.version, __ATOMIC_SEQ_CST);
 		if (title_v != title_last_version) {
 			pthread_mutex_lock(&shared_image->title_bar.lock);
 
 			glfwSetWindowTitle(window, shared_image->title_bar.title);
 
-			title_last_version = atomic_load(&shared_image->title_bar.version);
+			title_last_version = __atomic_load_n(&shared_image->title_bar.version, __ATOMIC_SEQ_CST);
 
 			pthread_mutex_unlock(&shared_image->title_bar.lock);
 		}

@@ -28,7 +28,7 @@ static void shared_title_update(SharedImage *shared_image, const char *title) {
 
 	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "RSIV - %s", title);
 
-	atomic_fetch_add(&shared_image->title_bar.version, 1);
+	__atomic_fetch_add(&shared_image->title_bar.version, 1, __ATOMIC_SEQ_CST);
 
 	pthread_mutex_unlock(&shared_image->title_bar.lock);
 }
