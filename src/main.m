@@ -15,18 +15,24 @@
 
 static SharedImage *shared_image;
 
-int rsiv_main(int argc, char **argv) {
+void init() {
+	//共有変数
+	shared_image = malloc(sizeof(SharedImage));
+	pthread_mutex_init(&shared_image->lock, NULL);
+
 	//ドラドロを初期化
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
 	shared_image->dd.path_list = un_list_create();
-
-	//引数
-	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
 
 	//タイトルバーを初期化
 	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
 	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "%s", "RSIV - んご");
 	shared_image->title_bar.version = 0;
+}
+
+int rsiv_main(int argc, char **argv) {
+	//引数
+	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
 
 	//デフォルト画像を初期化
 	shared_image->image = load_image("");
@@ -56,17 +62,16 @@ int rsiv_main(int argc, char **argv) {
 	rsiv_main(0, NULL);
 }
 
-
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
 	for (NSURL *url in urls) {
 		if (!url.isFileURL) {
 			continue;
 		}
 
-		//ファイルパス
-		NSString *path = url.path;
-
-		un_list_add(shared_image->dd.path_list, [path utf8String]);
+		const char *path = [url.path UTF8String];
+		pthread_mutex_lock(&shared_image->dd.lock);
+		un_list_add(shared_image->dd.path_list, strdup(path));
+		pthread_mutex_unlock(&shared_image->dd.lock);
 	}
 }
 
@@ -89,9 +94,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	//共有変数
-	shared_image = malloc(sizeof(SharedImage));
-	pthread_mutex_init(&shared_image->lock, NULL);
+	init();
 
 #ifdef __APPLE__
 	@autoreleasepool {
@@ -104,5 +107,5 @@ int main(int argc, char **argv) {
 	}
 #endif
 
-	rsiv_main(argc, argv);
+	return rsiv_main(argc, argv);
 }
