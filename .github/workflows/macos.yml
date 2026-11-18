@@ -1,0 +1,24 @@
+name: macOS
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libraries
+        run: brew install glfw libpng jpeg-turbo webp giflib librsvg pkg-config
+
+      - name: Build
+        run: ./build_macos.sh
+
+      - name: Upload rsiv.out
+        uses: actions/upload-artifact@v4
+        with:
+          name: rsiv-macos
+          path: rsiv.out
