@@ -1,6 +1,7 @@
 #import <stdint.h>
 #import <stdlib.h>
 #import <stdbool.h>
+#import <string.h>
 
 #import "../rsiv.h"
 #import "../testpattern.h"

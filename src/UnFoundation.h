@@ -1,8 +1,12 @@
 //Foundation の代わりをする最小ライブラリの公開 API（C言語）
 //Linux / macOS では UnFoundation.m が本物の Foundation を包み、
 //それ以外（Windows・BSD 等）では UnFoundation.c が C 標準ライブラリで実装する。
-//アプリ側はどちらの環境でもこの C の API だけを使い、ObjC の型は持ち込まない
+//アプリ側はどちらの環境でも、この C の API だけを使い、ObjC の型は持ち込まない
 //（＝ Linux / macOS 以外では ObjC ランタイムを一切通らない）。
+
+#ifdef __OBJC__
+#import <objc/objc.h>
+#endif
 
 //C として読まれたとき用の BOOL（ObjC のときは objc の定義がある）
 //Windows では windows.h と同じ int にしておく（同じ型の typedef の重複は C11 で合法なので、読み込み順に左右されない）
