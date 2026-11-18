@@ -4,7 +4,7 @@
 //アプリ側はどちらの環境でも、この C の API だけを使い、ObjC の型は持ち込まない
 //（＝ Linux / macOS 以外では ObjC ランタイムを一切通らない）。
 
-#ifdef __OBJC__
+#if defined(__OBJC__) && (defined(__linux__) || defined(__APPLE__))
 #import <objc/objc.h>
 #endif
 
