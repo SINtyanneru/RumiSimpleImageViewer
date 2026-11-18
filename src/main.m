@@ -1,5 +1,4 @@
-#import "Foundation/NSArray.h"
-#import <Foundation/Foundation.h>
+#import "foundation.h"
 #import <stdlib.h>
 #import <stdio.h>
 #import <pthread.h>
@@ -13,7 +12,13 @@
 #import "chinko.h"
 #import "thumbnail.h"
 
-int main(void) {
+int main(int argc, char **argv) {
+#if !defined(__linux__) && !defined(__APPLE__)
+	//UnFoundation の NSProcessInfo 用に引数を渡しておく
+	rsiv_argc = argc;
+	rsiv_argv = argv;
+#endif
+
 	//サムネイル生成モード（ファイルマネージャーから呼ばれる、ウィンドウは開かない）
 	{
 		NSArray<NSString *> *args = [[NSProcessInfo processInfo] arguments];

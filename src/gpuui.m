@@ -1,6 +1,6 @@
 #pragma clang diagnostic ignored "-Wc23-extensions"
 
-#import <Foundation/Foundation.h>
+#import "foundation.h"
 #import <GL/glew.h>
 #import <GL/gl.h>
 #import <pthread.h>

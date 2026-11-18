@@ -1,6 +1,6 @@
 //名前が思いつかんかった
 #import <stdlib.h>
-#import <Foundation/Foundation.h>
+#import "foundation.h"
 #import <pthread.h>
 #import <stdatomic.h>
 #import <GLFW/glfw3.h>

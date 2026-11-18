@@ -3,7 +3,7 @@
 #import <stdint.h>
 #import <string.h>
 
-#import <Foundation/Foundation.h>
+#import "foundation.h"
 #import <png.h>
 
 #import "rsiv.h"

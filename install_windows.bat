@@ -20,7 +20,7 @@ echo copy: rsiv.exe --- %INSTALL_DIR%\rsiv.exe
 
 rem 実行に要る MSYS2 の DLL を一緒にコピーする
 rem （実際に要る物は環境で変わるので、足りないときは ldd rsiv.exe で確認）
-for %%d in (gnustep-base.dll libobjc.dll glfw3.dll glew32.dll libpng16-16.dll libjpeg-8.dll libwebp-7.dll libwebpdemux-2.dll libgif-7.dll librsvg-2-2.dll libcairo-2.dll libgobject-2.0-0.dll libglib-2.0-0.dll libgio-2.0-0.dll libwinpthread-1.dll) do (
+for %%d in (libobjc-4.dll libgcc_s_seh-1.dll glfw3.dll glew32.dll libpng16-16.dll libjpeg-8.dll libwebp-7.dll libwebpdemux-2.dll libgif-7.dll librsvg-2-2.dll libcairo-2.dll libgobject-2.0-0.dll libglib-2.0-0.dll libgio-2.0-0.dll libwinpthread-1.dll) do (
 	if exist "%MSYS2_ROOT%\mingw64\bin\%%d" copy /y "%MSYS2_ROOT%\mingw64\bin\%%d" "%INSTALL_DIR%\" >nul
 )
 echo copy: DLLs

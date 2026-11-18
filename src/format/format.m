@@ -1,4 +1,4 @@
-#import <Foundation/Foundation.h>
+#import "../foundation.h"
 #import <stdint.h>
 #import <stdlib.h>
 #import <stdbool.h>
