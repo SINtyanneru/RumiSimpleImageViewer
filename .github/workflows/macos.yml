@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install libraries
-        run: brew install glfw libpng jpeg-turbo libwebp giflib librsvg pkg-config
+        run: brew install glfw libpng jpeg-turbo webp giflib librsvg pkg-config
 
       - name: Build
         run: ./build_macos.sh

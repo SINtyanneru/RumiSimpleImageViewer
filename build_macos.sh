@@ -1,7 +1,7 @@
 #!/bin/bash
 #rsiv macOS ビルド
 #前提として Homebrew で入れておくもの:
-#	brew install glfw libpng jpeg-turbo libwebp giflib librsvg pkg-config
+#	brew install glfw libpng jpeg-turbo webp giflib librsvg pkg-config
 #アプリ本体は Objective-C（Foundation は本物、UnFoundation.m が包む）
 #GLEW は使わない（GLFW_INCLUDE_GLCOREARB で <OpenGL/gl3.h> を直接使う）
 set -e
