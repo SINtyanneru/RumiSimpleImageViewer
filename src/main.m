@@ -13,6 +13,8 @@
 #import "chinko.h"
 #import "thumbnail.h"
 
+static SharedImage *shared_image;
+
 #ifdef __APPLE__
 #import <Cocoa/Cocoa.h>
 
@@ -35,6 +37,8 @@
 		alert.messageText = path;
 		[alert addButtonWithTitle:@"OK"];
 		[alert runModal];
+
+		un_list_add(shared_image->dd.path_list, [path utf8String]);
 	}
 }
 
@@ -58,12 +62,8 @@ int main(int argc, char **argv) {
 	}
 
 	//共有変数
-	SharedImage *shared_image = malloc(sizeof(SharedImage));
+	shared_image = malloc(sizeof(SharedImage));
 	pthread_mutex_init(&shared_image->lock, NULL);
-
-	//ドラドロを初期化
-	pthread_mutex_init(&shared_image->dd.lock, NULL);
-	shared_image->dd.path_list = un_list_create();
 
 #ifdef __APPLE__
 	@autoreleasepool {
@@ -74,6 +74,10 @@ int main(int argc, char **argv) {
 		[app run];
 	}
 #endif
+
+	//ドラドロを初期化
+	pthread_mutex_init(&shared_image->dd.lock, NULL);
+	shared_image->dd.path_list = un_list_create();
 
 	//引数
 	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
