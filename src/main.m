@@ -12,6 +12,9 @@
 #import "gpuui.h"
 #import "chinko.h"
 #import "thumbnail.h"
+#ifdef __APPLE__
+#import "macopen.h"
+#endif
 
 int main(int argc, char **argv) {
 #if !defined(__linux__) && !defined(__APPLE__)
@@ -36,6 +39,11 @@ int main(int argc, char **argv) {
 	//ドラドロを初期化
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
 	shared_image->dd.path_list = un_list_create();
+
+#ifdef __APPLE__
+	//Finder の関連付けから開かれたときの受け口（macOS は argv ではなく Apple Event で渡してくる）
+	rsiv_mac_install_open_handler(shared_image);
+#endif
 
 	//引数
 	if (un_arg_count() >= 2)
