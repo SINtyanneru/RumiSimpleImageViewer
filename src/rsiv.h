@@ -18,10 +18,23 @@ typedef struct {
 	double fps;
 } Image;
 
+
+
+
+
+
+
+
 typedef struct {
 	pthread_mutex_t lock;
 	NSMutableArray *path_list;
 } DD;
+
+typedef struct {
+	pthread_mutex_t lock;
+	char title[256];
+	uint32_t version;
+} TitleBar;
 
 typedef struct {
 	//画像データ
@@ -30,4 +43,5 @@ typedef struct {
 	Image *image;
 
 	DD dd;
+	TitleBar title_bar;
 } SharedImage;

@@ -10,16 +10,26 @@
 
 static NSMutableArray *global_path_list;
 
-void shared_image_update(SharedImage *shared_image, Image *img) {
-	pthread_mutex_lock(&shared_image->lock);
+// static void shared_image_update(SharedImage *shared_image, Image *img) {
+// 	pthread_mutex_lock(&shared_image->lock);
 
-	shared_image->image = img;
+// 	shared_image->image = img;
 
-	atomic_fetch_add(&shared_image->version, 1);
+// 	atomic_fetch_add(&shared_image->version, 1);
 
-	pthread_mutex_unlock(&shared_image->lock);
+// 	pthread_mutex_unlock(&shared_image->lock);
 
-	glfwPostEmptyEvent();
+// 	glfwPostEmptyEvent();
+// }
+
+static void shared_title_update(SharedImage *shared_image, NSString *title) {
+	pthread_mutex_lock(&shared_image->title_bar.lock);
+
+	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "RSIV - %s", [title UTF8String]);
+
+	atomic_fetch_add(&shared_image->title_bar.version, 1);
+
+	pthread_mutex_unlock(&shared_image->title_bar.lock);
 }
 
 void check_event_dd(SharedImage *shared_image) {
@@ -34,6 +44,8 @@ void check_event_dd(SharedImage *shared_image) {
 		for (NSString *path in path_list) {
 			shared_image->image = load_image(path);
 			shared_image->version += 1;
+
+			shared_title_update(shared_image, path);
 
 			[global_path_list addObject:path];
 		}

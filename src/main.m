@@ -21,6 +21,12 @@ int main(void) {
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
 	shared_image->dd.path_list = [[NSMutableArray alloc] init];
 
+	//タイトルバーを初期化
+	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
+	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "%s", "RSIV - んご");
+	shared_image->title_bar.version = 0;
+
+	//デフォルト画像を初期化
 	shared_image->image = load_image(@"");
 
 	//別スレッドでちんこを開始

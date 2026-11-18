@@ -137,7 +137,7 @@ BOOL create_window() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(800, 600, "RGBA Viewer", NULL, NULL);
+	window = glfwCreateWindow(800, 600, "RSIV - んご", NULL, NULL);
 	if (!window) {
 		fprintf(stderr, "Window create failed\n");
 		glfwTerminate();
@@ -233,7 +233,10 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 	GLint loc_img = glGetUniformLocation(prog, "u_img");
 	GLint loc_off = glGetUniformLocation(prog, "u_off");
 	GLint loc_zoom = glGetUniformLocation(prog, "u_zoom");
-	uint32_t last_version = 0;
+
+	uint32_t image_last_version = 0;
+	uint32_t title_last_version = 0;
+
 	uint32_t texture_w = img->width;
 	uint32_t texture_h = img->height;
 	double animation_time = glfwGetTime();
@@ -242,9 +245,9 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 	while (!glfwWindowShouldClose(window)) {
 		glfwGetFramebufferSize(window, &fw, &fh);
 
-		//更新検知
-		uint32_t v = atomic_load(&shared_image->version);
-		if (v != last_version) {
+		//画像の更新検知
+		uint32_t image_v = atomic_load(&shared_image->version);
+		if (image_v != image_last_version) {
 			pthread_mutex_lock(&shared_image->lock);
 
 			memcpy(img, shared_image->image, sizeof(Image));
@@ -258,7 +261,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->width, img->height, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
 			}
 
-			last_version = atomic_load(&shared_image->version);
+			image_last_version = atomic_load(&shared_image->version);
 
 			pthread_mutex_unlock(&shared_image->lock);
 
@@ -266,6 +269,18 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 			animation_time = glfwGetTime();
 			cur_frame = -1;
 			reset_view(img);
+		}
+
+		//画像の更新検知
+		uint32_t title_v = atomic_load(&shared_image->title_bar.version);
+		if (title_v != title_last_version) {
+			pthread_mutex_lock(&shared_image->title_bar.lock);
+
+			glfwSetWindowTitle(window, shared_image->title_bar.title);
+
+			title_last_version = atomic_load(&shared_image->title_bar.version);
+
+			pthread_mutex_unlock(&shared_image->title_bar.lock);
 		}
 
 		//アニメーション
