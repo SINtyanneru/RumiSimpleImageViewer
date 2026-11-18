@@ -1,4 +1,3 @@
-#import "../foundation.h"
 #import <stdint.h>
 #import <stdlib.h>
 #import <stdbool.h>
@@ -90,11 +89,11 @@ ImageType get_type(FILE *f) {
 	return Image_Unknown;
 }
 
-static Image *load_image_impl(NSString *path, bool *want_fallback) {
+static Image *load_image_impl(const char *path, bool *want_fallback) {
 	Image *image = NULL;
 	*want_fallback = false;
 
-	FILE *f = rsiv_fopen([path UTF8String], "rb");
+	FILE *f = rsiv_fopen(path, "rb");
 	if (f == false) {
 		*want_fallback = true;
 		return NULL;
@@ -170,7 +169,7 @@ static Image *make_fallback_image() {
 	return image;
 }
 
-Image *load_image(NSString *path) {
+Image *load_image(const char *path) {
 	bool want_fallback = false;
 	Image *image = load_image_impl(path, &want_fallback);
 
@@ -180,7 +179,7 @@ Image *load_image(NSString *path) {
 	return image;
 }
 
-Image *load_image_strict(NSString *path) {
+Image *load_image_strict(const char *path) {
 	bool want_fallback = false;
 	return load_image_impl(path, &want_fallback);
 }

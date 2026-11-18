@@ -1,74 +1,29 @@
-//最小限の Foundation 互換ライブラリ（Linux / macOS 以外用）
-//rsiv が使う NSString / NSArray / NSMutableArray / NSProcessInfo / NSAutoreleasePool だけを
-//C 標準ライブラリで実装する。
-//メモリ管理は割り切って「解放しない」方式にする（retain / release / autorelease は何もしない）。
-//引数やドラッグ＆ドロップのパス程度しか扱わないので、これで足りる。
-#import <objc/objc.h>
-#import <stdint.h>
+//Foundation の代わりをする最小ライブラリの公開 API（C言語）
+//Linux / macOS では UnFoundation.m が本物の Foundation を包み、
+//それ以外（Windows・BSD 等）では UnFoundation.c が C 標準ライブラリで実装する。
+//アプリ側はどちらの環境でもこの C の API だけを使い、ObjC の型は持ち込まない
+//（＝ Linux / macOS 以外では ObjC ランタイムを一切通らない）。
 
-typedef uintptr_t NSUInteger;
-typedef intptr_t NSInteger;
+//C として読まれたとき用の BOOL（ObjC のときは objc の定義がある）
+#if !defined(__OBJC__) && !defined(_WINDEF_)
+typedef unsigned char BOOL;
+#define YES 1
+#define NO 0
+#endif
 
-typedef struct {
-	unsigned long state;
-	id *itemsPtr;
-	unsigned long *mutationsPtr;
-	unsigned long extra[5];
-} NSFastEnumerationState;
+//文字列リスト（文字列はコピーして持つ）
+typedef struct UnStringList UnStringList;
 
-__attribute__((objc_root_class))
-@interface NSObject {
-	Class isa;
-}
-+ (id)alloc;
-- (id)init;
-- (id)retain;
-- (void)release;
-- (id)autorelease;
-- (void)dealloc;
-@end
+UnStringList *un_list_create(void);
+void un_list_add(UnStringList *list, const char *text);
+int un_list_count(UnStringList *list);
+const char *un_list_get(UnStringList *list, int index);
+void un_list_clear(UnStringList *list);
 
-@interface NSString : NSObject {
-	char *_bytes;
-	unsigned int _length;
-}
-+ (NSString *)stringWithUTF8String:(const char *)text;
-- (NSString *)initWithUTF8String:(const char *)text;
-- (const char *)UTF8String;
-- (NSUInteger)length;
-- (int)intValue;
-- (BOOL)isEqualToString:(NSString *)other;
-@end
+//プログラム引数（UTF-8 の C 文字列として返す。0番はプログラム名）
+int un_arg_count(void);
+const char *un_arg_get(int index);
 
-//@"..." リテラル用のクラス。レイアウトは NSString の先頭（_bytes・_length）と一致させること
-@interface NSConstantString : NSString
-@end
-
-@interface NSArray<__covariant ObjectType> : NSObject {
-	id *_objects;
-	NSUInteger _count;
-	NSUInteger _capacity;
-	unsigned long _mutations;
-}
-- (NSUInteger)count;
-- (ObjectType)objectAtIndex:(NSUInteger)index;
-- (NSUInteger)countByEnumeratingWithState:(NSFastEnumerationState *)state objects:(id *)buffer count:(NSUInteger)len;
-@end
-
-@interface NSMutableArray<__covariant ObjectType> : NSArray<ObjectType>
-- (void)addObject:(ObjectType)object;
-- (void)removeAllObjects;
-@end
-
-@interface NSProcessInfo : NSObject
-+ (NSProcessInfo *)processInfo;
-- (NSArray *)arguments;
-@end
-
-@interface NSAutoreleasePool : NSObject
-- (void)drain;
-@end
-
-//main() の引数を NSProcessInfo へ渡すための受け口（Windows では GetCommandLineW を使うので未使用）
+//main() の引数の受け口（UnFoundation.c 用。UnFoundation.m は NSProcessInfo を使うので未使用）
 extern int rsiv_argc;
 extern char **rsiv_argv;

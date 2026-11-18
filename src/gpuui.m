@@ -1,6 +1,5 @@
 #pragma clang diagnostic ignored "-Wc23-extensions"
 
-#import "foundation.h"
 #import <GL/glew.h>
 #import <GL/gl.h>
 #import <pthread.h>
@@ -150,18 +149,15 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
 void drop_callback(GLFWwindow *window, int count, const char **pathlp) {
 	SharedImage *shared_image = glfwGetWindowUserPointer(window);
 
-	@autoreleasepool {
-		pthread_mutex_lock(&shared_image->dd.lock);
+	pthread_mutex_lock(&shared_image->dd.lock);
 
-		[shared_image->dd.path_list removeAllObjects];
+	un_list_clear(shared_image->dd.path_list);
 
-		for (int i = 0; i < count; i++) {
-			NSString *path = [NSString stringWithUTF8String:pathlp[i]];
-			if (path != NULL) [shared_image->dd.path_list addObject: path];
-		}
-
-		pthread_mutex_unlock(&shared_image->dd.lock);
+	for (int i = 0; i < count; i++) {
+		if (pathlp[i] != NULL) un_list_add(shared_image->dd.path_list, pathlp[i]);
 	}
+
+	pthread_mutex_unlock(&shared_image->dd.lock);
 }
 
 BOOL create_window() {

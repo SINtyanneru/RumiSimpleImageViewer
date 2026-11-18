@@ -4,6 +4,7 @@ clang \
 	src/testpattern.m \
 	src/chinko.m \
 	src/thumbnail.m \
+	src/UnFoundation.m \
 	\
 	src/format/*.m src/format/*.mm \
 	\

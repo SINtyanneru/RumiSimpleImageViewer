@@ -3,7 +3,6 @@
 #import <stdint.h>
 #import <string.h>
 
-#import "foundation.h"
 #import <png.h>
 
 #import "rsiv.h"
@@ -97,8 +96,8 @@ static Image *scale_down(Image *src, int size) {
 	return img;
 }
 
-static int save_png(NSString *path, Image *img) {
-	FILE *f = rsiv_fopen([path UTF8String], "wb");
+static int save_png(const char *path, Image *img) {
+	FILE *f = rsiv_fopen(path, "wb");
 	if (f == NULL)
 		return 1;
 
@@ -135,11 +134,9 @@ static int save_png(NSString *path, Image *img) {
 	return 0;
 }
 
-int make_thumbnail(NSString *in_path, NSString *out_path, int size) {
+int make_thumbnail(const char *in_path, const char *out_path, int size) {
 	if (size <= 0)
 		return 1;
-
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
 	int rc = 1;
 	Image *src = load_image_strict(in_path);
@@ -156,8 +153,6 @@ int make_thumbnail(NSString *in_path, NSString *out_path, int size) {
 		free(src->data);
 		free(src);
 	}
-
-	[pool drain];
 
 	return rc;
 }
