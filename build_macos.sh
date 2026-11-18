@@ -30,5 +30,5 @@ clang \
 	-L"$BREW_PREFIX/lib" \
 	-lglfw -lpng -ljpeg -lwebp -lgif -lwebpdemux \
 	$(pkg-config --cflags --libs librsvg-2.0) \
-	-framework Foundation -framework OpenGL \
+	-framework Foundation -framework OpenGL -framework AppKit \
 	-o rsiv.out
