@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=/bin/rsiv
+Exec=/bin/rsiv --thumbnail %i %o %s
+MimeType=image/x-mag;image/x-maki;image/x-pi;

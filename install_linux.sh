@@ -78,4 +78,7 @@ if command -v xdg-mime > /dev/null; then
 	xdg-mime default rsiv.desktop image/x-pi
 fi
 
+sudo cp rsiv.thumbnailer /usr/share/thumbnailers/rsiv.thumbnailer
+echo "ｶｷｺﾐ: ----> /usr/share/thumbnailers/rsiv.thumbnailer"
+
 echo "ｶﾝﾘｮｳ, ｲﾝｽﾄｰﾙOK"
