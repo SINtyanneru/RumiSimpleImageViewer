@@ -17,7 +17,7 @@ clang \
 	src/chinko.m \
 	src/thumbnail.m \
 	\
-	src/format/*.m \
+	src/format/*.m src/format/*.mm \
 	\
 	-lglfw3 -lglew32 -lopengl32 -lgdi32 -lpng -ljpeg -lwebp -lgif -lwebpdemux -lpthread \
 	$(pkg-config --cflags --libs librsvg-2.0) \

@@ -1,10 +1,6 @@
 #import <stdio.h>
 #import <stdlib.h>
 #import <stdint.h>
-#ifdef _WIN32
-//jpeglib.h経由でshlwapi.hが読まれる前に、interfaceマクロを定義するobjbase.hを先に読む
-#import <objbase.h>
-#endif
 #import <jpeglib.h>
 
 #import "../rsiv.h"
