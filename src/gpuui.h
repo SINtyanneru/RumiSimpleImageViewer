@@ -1,0 +1,1 @@
+void gpuui_main(SharedImage *shared_image);

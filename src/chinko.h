@@ -1,0 +1,1 @@
+void *chinko_main(void *p);
