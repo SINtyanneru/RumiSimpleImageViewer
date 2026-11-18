@@ -12,16 +12,16 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install libraries
-        run: brew install glfw libpng jpeg-turbo webp giflib librsvg pkg-config
+        run: brew install glfw libpng jpeg-turbo webp giflib librsvg pkg-config dylibbundler create-dmg
 
-      - name: Build
-        run: ./build_macos.sh
+      - name: Package (.app + dmg)
+        run: ./package_macos.sh
 
-      - name: Make dmg
+      - name: Smoke test (thumbnail)
         run: |
-          mkdir dist
-          cp rsiv.out dist/
-          hdiutil create -volname rsiv -srcfolder dist -ov -format UDZO rsiv-macos.dmg
+          printf '<svg xmlns="http://www.w3.org/2000/svg" width="100" height="80"><rect width="100" height="80" fill="#A8EDEA"/></svg>' > /tmp/t.svg
+          ./rsiv.app/Contents/MacOS/rsiv --thumbnail /tmp/t.svg /tmp/t.png 128
+          test -s /tmp/t.png
 
       - name: Upload dmg
         uses: actions/upload-artifact@v4
