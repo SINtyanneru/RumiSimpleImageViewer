@@ -1,4 +1,4 @@
-#include "Foundation/NSArray.h"
+#import "Foundation/NSArray.h"
 #import <Foundation/Foundation.h>
 #import <stdlib.h>
 #import <stdio.h>

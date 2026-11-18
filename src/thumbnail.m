@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
+#import <stdio.h>
+#import <stdlib.h>
+#import <stdint.h>
+#import <string.h>
 
 #import <Foundation/Foundation.h>
 #import <png.h>

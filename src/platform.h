@@ -1,16 +1,13 @@
 //OSごとの差分を吸収する
-#ifndef RSIV_PLATFORM_H
-#define RSIV_PLATFORM_H
-
-#include <stdio.h>
+#import <stdio.h>
 
 #ifdef _WIN32
 
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
-#include <windows.h>
-#include <stdlib.h>
-#include <string.h>
+#import <windows.h>
+#import <stdlib.h>
+#import <string.h>
 
 //WindowsのfopenはUTF-8のパスを解釈しないので、ワイド文字版（_wfopen）を使う
 //これをしないと日本語を含むファイル名が開けない
@@ -45,7 +42,5 @@ static inline FILE *rsiv_fopen(const char *path, const char *mode) {
 static inline FILE *rsiv_fopen(const char *path, const char *mode) {
 	return fopen(path, mode);
 }
-
-#endif
 
 #endif
