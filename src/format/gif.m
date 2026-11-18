@@ -1,3 +1,5 @@
+#import <stdio.h>
+#import <stdlib.h>
 #import <gif_lib.h>
 #import <string.h>
 

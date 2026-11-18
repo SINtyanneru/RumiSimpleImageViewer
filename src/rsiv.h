@@ -1,4 +1,4 @@
-#import <Foundation/Foundation.h>
+#import "UnFoundation.h"
 #import <stdint.h>
 #import <pthread.h>
 
@@ -27,7 +27,7 @@ typedef struct {
 
 typedef struct {
 	pthread_mutex_t lock;
-	NSMutableArray *path_list;
+	UnStringList *path_list;
 } DD;
 
 typedef struct {

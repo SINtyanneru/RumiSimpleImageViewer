@@ -1,3 +1,5 @@
+#import <stdio.h>
+#import <stdlib.h>
 #import <png.h>
 #import <setjmp.h>
 

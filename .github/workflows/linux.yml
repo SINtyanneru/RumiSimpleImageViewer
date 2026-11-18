@@ -1,0 +1,33 @@
+name: Linux
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang pkg-config gnustep-make libgnustep-base-dev libglfw3-dev libglew-dev libpng-dev libjpeg-turbo8-dev libwebp-dev libgif-dev librsvg2-dev
+
+      - name: Build
+        run: ./build_linux.sh
+
+      - name: Bundle installer
+        run: |
+          mkdir dist
+          cp rsiv.out dist/
+          cp install_linux.sh dist/
+          cp rsiv.thumbnailer dist/
+
+      - name: Upload rsiv.out
+        uses: actions/upload-artifact@v4
+        with:
+          name: rsiv-linux
+          path: dist

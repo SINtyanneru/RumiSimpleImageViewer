@@ -1,7 +1,7 @@
-#include "Foundation/NSArray.h"
-#import <Foundation/Foundation.h>
+#import "UnFoundation.h"
 #import <stdlib.h>
 #import <stdio.h>
+#import <string.h>
 #import <pthread.h>
 #import <stdbool.h>
 #import <stdatomic.h>
@@ -13,39 +13,29 @@
 #import "chinko.h"
 #import "thumbnail.h"
 
-int main(void) {
-	//サムネイル生成モード（ファイルマネージャーから呼ばれる、ウィンドウは開かない）
-	{
-		NSArray<NSString *> *args = [[NSProcessInfo processInfo] arguments];
-		if ([args count] >= 2 && [[args objectAtIndex:1] isEqualToString:@"--thumbnail"]) {
-			if ([args count] != 5)
-				return 1;
-			return make_thumbnail([args objectAtIndex:2], [args objectAtIndex:3], [[args objectAtIndex:4] intValue]);
-		}
-	}
+static SharedImage *shared_image;
 
+void init() {
 	//共有変数
-	SharedImage *shared_image = malloc(sizeof(SharedImage));
+	shared_image = malloc(sizeof(SharedImage));
 	pthread_mutex_init(&shared_image->lock, NULL);
 
 	//ドラドロを初期化
 	pthread_mutex_init(&shared_image->dd.lock, NULL);
-	shared_image->dd.path_list = [[NSMutableArray alloc] init];
-
-	//引数
-	NSArray<NSString *> *args = [[NSProcessInfo processInfo] arguments];
-	if ([args count] >= 2) {
-		NSString *path = [args objectAtIndex:1];
-		[shared_image->dd.path_list addObject:path];
-	}
+	shared_image->dd.path_list = un_list_create();
 
 	//タイトルバーを初期化
 	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
 	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "%s", "RSIV - んご");
 	shared_image->title_bar.version = 0;
+}
+
+int rsiv_main(int argc, char **argv) {
+	//引数
+	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
 
 	//デフォルト画像を初期化
-	shared_image->image = load_image(@"");
+	shared_image->image = load_image("");
 
 	//別スレッドでちんこを開始
 	pthread_t ui_thread;
@@ -56,4 +46,66 @@ int main(void) {
 
 	pthread_join(ui_thread, NULL);
 	pthread_mutex_destroy(&shared_image->lock);
+
+	return 0;
+}
+
+#ifdef __APPLE__
+#import <Cocoa/Cocoa.h>
+
+@interface AppDelegate : NSObject <NSApplicationDelegate>
+@end
+
+@implementation AppDelegate
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+	rsiv_main(0, NULL);
+}
+
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
+	for (NSURL *url in urls) {
+		if (!url.isFileURL) {
+			continue;
+		}
+
+		const char *path = [url.path UTF8String];
+		pthread_mutex_lock(&shared_image->dd.lock);
+		un_list_add(shared_image->dd.path_list, strdup(path));
+		pthread_mutex_unlock(&shared_image->dd.lock);
+	}
+}
+
+@end
+#endif
+
+int main(int argc, char **argv) {
+#if !defined(__linux__) && !defined(__APPLE__)
+	//UnFoundation.c の引数受け口へ渡しておく（Windows では使われない）
+	rsiv_argc = argc;
+	rsiv_argv = argv;
+#endif
+
+	//サムネイル生成モード（ファイルマネージャーから呼ばれる、ウィンドウは開かない）
+	{
+		if (un_arg_count() >= 2 && strcmp(un_arg_get(1), "--thumbnail") == 0) {
+			if (un_arg_count() != 5)
+				return 1;
+			return make_thumbnail(un_arg_get(2), un_arg_get(3), atoi(un_arg_get(4)));
+		}
+	}
+
+	init();
+
+#ifdef __APPLE__
+	@autoreleasepool {
+		NSApplication *app = [NSApplication sharedApplication];
+		AppDelegate *delegate = [[AppDelegate alloc] init];
+		app.delegate = delegate;
+		[app setActivationPolicy:NSApplicationActivationPolicyRegular];
+		[app run];
+		//macOSはここで終了
+	}
+#endif
+
+	return rsiv_main(argc, argv);
 }

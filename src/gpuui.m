@@ -1,8 +1,12 @@
 #pragma clang diagnostic ignored "-Wc23-extensions"
 
-#import <Foundation/Foundation.h>
+#ifdef __APPLE__
+//macOS では GLEW は使わない（glfw3.h に <OpenGL/gl3.h> を読ませる）
+#define GLFW_INCLUDE_GLCOREARB
+#else
 #import <GL/glew.h>
 #import <GL/gl.h>
+#endif
 #import <pthread.h>
 #import <GLFW/glfw3.h>
 #import <stdio.h>
@@ -150,24 +154,25 @@ static void cursor_pos_callback(GLFWwindow *window, double x, double y) {
 void drop_callback(GLFWwindow *window, int count, const char **pathlp) {
 	SharedImage *shared_image = glfwGetWindowUserPointer(window);
 
-	@autoreleasepool {
-		pthread_mutex_lock(&shared_image->dd.lock);
+	pthread_mutex_lock(&shared_image->dd.lock);
 
-		[shared_image->dd.path_list removeAllObjects];
+	un_list_clear(shared_image->dd.path_list);
 
-		for (int i = 0; i < count; i++) {
-			NSString *path = [NSString stringWithUTF8String:pathlp[i]];
-			if (path != NULL) [shared_image->dd.path_list addObject: path];
-		}
-
-		pthread_mutex_unlock(&shared_image->dd.lock);
+	for (int i = 0; i < count; i++) {
+		if (pathlp[i] != NULL) un_list_add(shared_image->dd.path_list, pathlp[i]);
 	}
+
+	pthread_mutex_unlock(&shared_image->dd.lock);
 }
 
 BOOL create_window() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef __APPLE__
+	//macOS でコアプロファイルを作るには前方互換の指定が要る
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
 	window = glfwCreateWindow(800, 600, "RSIV - んご", NULL, NULL);
 	if (!window) {
@@ -179,11 +184,13 @@ BOOL create_window() {
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
+#ifndef __APPLE__
 	glewExperimental = GL_TRUE;
 	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "GLEW init failed\n");
 		return NO;
 	}
+#endif
 
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetScrollCallback(window, scroll_callback);
@@ -280,7 +287,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		glfwGetFramebufferSize(window, &fw, &fh);
 
 		//画像の更新検知
-		uint32_t image_v = atomic_load(&shared_image->version);
+		uint32_t image_v = __atomic_load_n(&shared_image->version, __ATOMIC_SEQ_CST);
 		if (image_v != image_last_version) {
 			pthread_mutex_lock(&shared_image->lock);
 
@@ -295,7 +302,7 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 				glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, img->width, img->height, GL_RGBA, GL_UNSIGNED_BYTE, img->data);
 			}
 
-			image_last_version = atomic_load(&shared_image->version);
+			image_last_version = __atomic_load_n(&shared_image->version, __ATOMIC_SEQ_CST);
 
 			pthread_mutex_unlock(&shared_image->lock);
 
@@ -306,13 +313,13 @@ void ui_loop(Image *img, SharedImage *shared_image, int32_t fw, int32_t fh) {
 		}
 
 		//画像の更新検知
-		uint32_t title_v = atomic_load(&shared_image->title_bar.version);
+		uint32_t title_v = __atomic_load_n(&shared_image->title_bar.version, __ATOMIC_SEQ_CST);
 		if (title_v != title_last_version) {
 			pthread_mutex_lock(&shared_image->title_bar.lock);
 
 			glfwSetWindowTitle(window, shared_image->title_bar.title);
 
-			title_last_version = atomic_load(&shared_image->title_bar.version);
+			title_last_version = __atomic_load_n(&shared_image->title_bar.version, __ATOMIC_SEQ_CST);
 
 			pthread_mutex_unlock(&shared_image->title_bar.lock);
 		}

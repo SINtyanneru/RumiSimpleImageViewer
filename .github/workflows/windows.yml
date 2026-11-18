@@ -1,0 +1,48 @@
+name: Windows
+
+on:
+  pull_request:
+    branches: [develop, master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-clang
+            mingw-w64-x86_64-pkg-config
+            mingw-w64-x86_64-glfw
+            mingw-w64-x86_64-glew
+            mingw-w64-x86_64-libpng
+            mingw-w64-x86_64-libjpeg-turbo
+            mingw-w64-x86_64-libwebp
+            mingw-w64-x86_64-giflib
+            mingw-w64-x86_64-librsvg
+
+      - name: Build
+        shell: msys2 {0}
+        run: ./build_windows.sh
+
+      - name: Bundle DLLs
+        shell: msys2 {0}
+        run: |
+          mkdir dist
+          cp rsiv.exe dist/
+          cp install_windows.bat dist/
+          ldd rsiv.exe | grep -o '/mingw64/bin/[^ ]*\.dll' | sort -u | while read d; do cp "$d" dist/; done
+          ls dist
+
+      - name: Upload rsiv.exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: rsiv-windows
+          path: dist
