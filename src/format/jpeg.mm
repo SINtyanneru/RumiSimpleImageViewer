@@ -14,6 +14,7 @@
 #import <jpeglib.h>
 
 #import "../rsiv.h"
+#import "jpeg.h"
 
 Image *load_jpeg(FILE *f) {
 	struct jpeg_decompress_struct cinfo;
