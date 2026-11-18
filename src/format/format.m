@@ -14,6 +14,7 @@
 #import "maki.h"
 #import "bmp.h"
 #import "pi.h"
+#import "svg.h"
 
 static const uint8_t PNG_MAGIC[] = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
@@ -27,7 +28,8 @@ typedef enum {
 	Image_MAG,
 	Image_MAKI,
 	Image_BMP,
-	Image_PI
+	Image_PI,
+	Image_SVG
 } ImageType;
 
 ImageType get_type(FILE *f) {
@@ -72,6 +74,16 @@ ImageType get_type(FILE *f) {
 	//Pi
 	if (size >= 2) {
 		if (header[0] == 'P' && header[1] == 'i') return Image_PI;
+	}
+
+	//SVG（XMLテキストなので先頭2KB以内に<svgがあるかで判定）
+	{
+		uint8_t buf[2048];
+		fseek(f, 0, SEEK_SET);
+		size_t n = fread(buf, 1, sizeof(buf), f);
+		for (size_t i = 0; i + 4 <= n; i++) {
+			if (memcmp(buf + i, "<svg", 4) == 0) return Image_SVG;
+		}
 	}
 
 	return Image_Unknown;
@@ -133,6 +145,11 @@ Image *load_image(NSString *path) {
 
 		case Image_PI: {
 			image = load_pi(f);
+			break;
+		}
+
+		case Image_SVG: {
+			image = load_svg(f);
 			break;
 		}
 

@@ -13,3 +13,4 @@
 * maki.*			→	MAKI
 * bmp.*				→	BMP
 * pi.*				→	PI
+* svg.*				→	SVG（librsvgでFHDへラスタライズ）
