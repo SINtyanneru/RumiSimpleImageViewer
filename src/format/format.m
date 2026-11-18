@@ -89,19 +89,14 @@ ImageType get_type(FILE *f) {
 	return Image_Unknown;
 }
 
-Image *load_image(NSString *path) {
+static Image *load_image_impl(NSString *path, bool *want_fallback) {
 	Image *image = NULL;
+	*want_fallback = false;
 
 	FILE *f = fopen([path UTF8String], "rb");
 	if (f == false) {
-		image = malloc(sizeof(Image));
-		image->width = 1920;
-		image->height = 1440;
-		image->count = 1;
-		image->fps = 0;
-		image->data = malloc(image->width * image->height * sizeof(RGBA));
-		draw_fubk(image);
-		return image;
+		*want_fallback = true;
+		return NULL;
 	}
 
 	ImageType type = get_type(f);
@@ -154,17 +149,37 @@ Image *load_image(NSString *path) {
 		}
 
 		default: {
-			image = malloc(sizeof(Image));
-			image->width = 1920;
-			image->height = 1440;
-			image->count = 1;
-			image->fps = 0;
-			image->data = malloc(image->width * image->height * sizeof(RGBA));
-			draw_fubk(image);
+			*want_fallback = true;
 		}
 	}
 
 	fclose(f);
 
 	return image;
+}
+
+static Image *make_fallback_image() {
+	Image *image = malloc(sizeof(Image));
+	image->width = 1920;
+	image->height = 1440;
+	image->count = 1;
+	image->fps = 0;
+	image->data = malloc(image->width * image->height * sizeof(RGBA));
+	draw_fubk(image);
+	return image;
+}
+
+Image *load_image(NSString *path) {
+	bool want_fallback = false;
+	Image *image = load_image_impl(path, &want_fallback);
+
+	if (image == NULL && want_fallback)
+		image = make_fallback_image();
+
+	return image;
+}
+
+Image *load_image_strict(NSString *path) {
+	bool want_fallback = false;
+	return load_image_impl(path, &want_fallback);
 }

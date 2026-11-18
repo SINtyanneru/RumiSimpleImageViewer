@@ -3,6 +3,7 @@ clang \
 	src/gpuui.m \
 	src/testpattern.m \
 	src/chinko.m \
+	src/thumbnail.m \
 	\
 	src/format/*.m \
 	\
