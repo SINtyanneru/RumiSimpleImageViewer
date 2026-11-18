@@ -15,6 +15,35 @@
 
 static SharedImage *shared_image;
 
+int rsiv_main(int argc, char **argv) {
+	//ドラドロを初期化
+	pthread_mutex_init(&shared_image->dd.lock, NULL);
+	shared_image->dd.path_list = un_list_create();
+
+	//引数
+	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
+
+	//タイトルバーを初期化
+	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
+	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "%s", "RSIV - んご");
+	shared_image->title_bar.version = 0;
+
+	//デフォルト画像を初期化
+	shared_image->image = load_image("");
+
+	//別スレッドでちんこを開始
+	pthread_t ui_thread;
+	pthread_create(&ui_thread, NULL, chinko_main, shared_image);
+
+	//メインスレッドでUIを軌道
+	gpuui_main(shared_image);
+
+	pthread_join(ui_thread, NULL);
+	pthread_mutex_destroy(&shared_image->lock);
+
+	return 0;
+}
+
 #ifdef __APPLE__
 #import <Cocoa/Cocoa.h>
 
@@ -23,7 +52,11 @@ static SharedImage *shared_image;
 
 @implementation AppDelegate
 
-//「このアプリで開く」やDock へのドロップで呼ばれる
+- (void)applicationDidFinishLaunching:(NSNotification *)notification {
+	rsiv_main(0, NULL);
+}
+
+
 - (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
 	for (NSURL *url in urls) {
 		if (!url.isFileURL) {
@@ -32,11 +65,6 @@ static SharedImage *shared_image;
 
 		//ファイルパス
 		NSString *path = url.path;
-
-		NSAlert *alert = [[NSAlert alloc] init];
-		alert.messageText = path;
-		[alert addButtonWithTitle:@"OK"];
-		[alert runModal];
 
 		un_list_add(shared_image->dd.path_list, [path utf8String]);
 	}
@@ -72,31 +100,9 @@ int main(int argc, char **argv) {
 		app.delegate = delegate;
 		[app setActivationPolicy:NSApplicationActivationPolicyRegular];
 		[app run];
+		//macOSはここで終了
 	}
 #endif
 
-	//ドラドロを初期化
-	pthread_mutex_init(&shared_image->dd.lock, NULL);
-	shared_image->dd.path_list = un_list_create();
-
-	//引数
-	if (un_arg_count() >= 2) un_list_add(shared_image->dd.path_list, un_arg_get(1));
-
-	//タイトルバーを初期化
-	pthread_mutex_init(&shared_image->title_bar.lock, NULL);
-	snprintf(shared_image->title_bar.title, sizeof(shared_image->title_bar.title), "%s", "RSIV - んご");
-	shared_image->title_bar.version = 0;
-
-	//デフォルト画像を初期化
-	shared_image->image = load_image("");
-
-	//別スレッドでちんこを開始
-	pthread_t ui_thread;
-	pthread_create(&ui_thread, NULL, chinko_main, shared_image);
-
-	//メインスレッドでUIを軌道
-	gpuui_main(shared_image);
-
-	pthread_join(ui_thread, NULL);
-	pthread_mutex_destroy(&shared_image->lock);
+	rsiv_main(argc, argv);
 }
