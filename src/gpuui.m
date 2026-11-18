@@ -59,7 +59,8 @@ static int32_t view_img_w = 0;
 static int32_t view_img_h = 0;
 
 //画像の移動を制限する
-//画像がウィンドウより大きいときは端まで、小さいときはウィンドウの内側まで
+//画像がウィンドウより大きいときは端まで、小さいときはウィンドウの内側まで。
+//ただし、画像の四隅がウィンドウの中央に来るまでは許容する
 static void clamp_view_offset() {
 	int fw, fh;
 	glfwGetFramebufferSize(window, &fw, &fh);
@@ -69,6 +70,12 @@ static void clamp_view_offset() {
 
 	float max_x = fabsf(iw - (float)fw) * 0.5f;
 	float max_y = fabsf(ih - (float)fh) * 0.5f;
+
+	//四隅が中央に来る位置
+	float corner_x = iw * 0.5f;
+	float corner_y = ih * 0.5f;
+	if (corner_x > max_x) max_x = corner_x;
+	if (corner_y > max_y) max_y = corner_y;
 
 	if (view_offset_x > max_x) view_offset_x = max_x;
 	if (view_offset_x < -max_x) view_offset_x = -max_x;
