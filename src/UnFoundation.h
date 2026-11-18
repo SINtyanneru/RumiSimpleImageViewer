@@ -4,11 +4,14 @@
 //アプリ側はどちらの環境でもこの C の API だけを使い、ObjC の型は持ち込まない
 //（＝ Linux / macOS 以外では ObjC ランタイムを一切通らない）。
 
-//C として読まれたとき用の BOOL（ObjC のときは objc の定義、Windows のときは windows.h の定義がある）
-#if !defined(__OBJC__) && !defined(_WIN32)
+//C として読まれたとき用の BOOL（ObjC のときは objc の定義がある）
+//Windows では windows.h と同じ int にしておく（同じ型の typedef の重複は C11 で合法なので、読み込み順に左右されない）
+#ifndef __OBJC__
+#ifdef _WIN32
+typedef int BOOL;
+#else
 typedef unsigned char BOOL;
 #endif
-#ifndef __OBJC__
 #define YES 1
 #define NO 0
 #endif
