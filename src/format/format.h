@@ -1,5 +1,6 @@
-
 #import "../rsiv.h"
+
+ImageType get_type(FILE *f);
 
 Image *load_image(const char *path);
 

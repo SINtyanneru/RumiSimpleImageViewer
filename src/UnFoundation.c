@@ -59,6 +59,17 @@ void un_list_clear(UnStringList *list) {
 	list->count = 0;
 }
 
+static int un_cmp_text(const void *a, const void *b) {
+	return strcmp(*(const char **)a, *(const char **)b);
+}
+
+void un_list_sort(UnStringList *list) {
+	if (list->count < 2)
+		return;
+	qsort(list->items, (size_t)list->count, sizeof(char *), un_cmp_text);
+}
+
+
 #ifdef _WIN32
 
 static char **win_args = NULL;

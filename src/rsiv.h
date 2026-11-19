@@ -5,6 +5,20 @@
 
 #define UIITEM_LENGTH 16
 
+typedef enum {
+	Image_Unknown,
+	Image_PNG,
+	Image_JPEG,
+	Image_WEBP,
+	Image_GIF,
+	Image_Video,
+	Image_MAG,
+	Image_MAKI,
+	Image_BMP,
+	Image_PI,
+	Image_SVG
+} ImageType;
+
 typedef struct {
 	uint8_t r;
 	uint8_t g;

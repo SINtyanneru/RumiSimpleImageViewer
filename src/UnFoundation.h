@@ -28,6 +28,7 @@ void un_list_add(UnStringList *list, const char *text);
 int un_list_count(UnStringList *list);
 const char *un_list_get(UnStringList *list, int index);
 void un_list_clear(UnStringList *list);
+void un_list_sort(UnStringList *list);
 
 //プログラム引数（UTF-8 の C 文字列として返す。0番はプログラム名）
 int un_arg_count(void);
