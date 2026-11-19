@@ -222,6 +222,9 @@ void on_window_resize(uint32_t width, uint32_t height) {
 	if (fit_after_no_move) {
 		image_fit_center();
 	}
+
+	menu_rect->w = get_screen_width();
+	menu_rect->y = get_screen_height() - MENU_HEIGHT;
 }
 
 /**
@@ -253,7 +256,7 @@ void main_loop() {
 			}
 
 			double e = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);
-			uint8_t a = (uint8_t)(240 * e);
+			uint8_t a = (uint8_t)(230 * e);
 			if (a != menu_rect->color.a) {
 				menu_rect->color.a = a;
 				menu_rect->texture_version += 1;
@@ -269,7 +272,7 @@ void main_loop() {
 			}
 
 			double e = 1.0 - (1.0 - t) * (1.0 - t) * (1.0 - t);
-			uint8_t a = (uint8_t)(240 * (1.0 - e));
+			uint8_t a = (uint8_t)(230 * (1.0 - e));
 			if (a != menu_rect->color.a) {
 				menu_rect->color.a = a;
 				menu_rect->texture_version += 1;

@@ -215,6 +215,8 @@ static void ui_loop(Image *img, UISharedData *shared, int32_t fw, int32_t fh) {
 	GLint loc_size = glGetUniformLocation(prog, "u_size");
 	GLint loc_color = glGetUniformLocation(prog, "u_color");
 
+	uint32_t title_last_version = 0;
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwGetFramebufferSize(window, &fw, &fh);
 		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
@@ -369,6 +371,18 @@ static void ui_loop(Image *img, UISharedData *shared, int32_t fw, int32_t fh) {
 					break;
 				}
 			}
+		}
+
+		//タイトルの更新検知
+		uint32_t title_v = __atomic_load_n(&shared->title_bar.version, __ATOMIC_SEQ_CST);
+		if (title_v != title_last_version) {
+			pthread_mutex_lock(&shared->title_bar.lock);
+
+			glfwSetWindowTitle(window, shared->title_bar.title);
+
+			title_last_version = __atomic_load_n(&shared->title_bar.version, __ATOMIC_SEQ_CST);
+
+			pthread_mutex_unlock(&shared->title_bar.lock);
 		}
 
 		main_loop();
