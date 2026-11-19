@@ -403,17 +403,16 @@ static int rsiv_main(int argc, char **argv) {
 	rsiv_main(0, NULL);
 }
 
-- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls {
-	for (NSURL *url in urls) {
-		if (!url.isFileURL) {
-			continue;
-		}
+- (void)application:(NSApplication *)application openFiles:(NSArray<NSString *> *)filenames {
+	for (NSString *filename in filenames) {
+		const char *path = [filename UTF8String];
 
-		const char *path = [url.path UTF8String];
 		pthread_mutex_lock(&shared_data->dd.lock);
 		un_list_add(shared_data->dd.path_list, strdup(path));
 		pthread_mutex_unlock(&shared_data->dd.lock);
 	}
+
+	[application replyToOpenOrPrint:NSApplicationDelegateReplySuccess];
 }
 
 @end
