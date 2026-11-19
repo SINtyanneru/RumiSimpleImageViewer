@@ -98,6 +98,32 @@ void image_zoom(double d) {
 }
 
 /**
+ * 画像を前へ
+*/
+void image_prev() {
+	pthread_mutex_lock(&shared_data->image_loder.lock);
+
+	if (shared_data->image_loder.image_select != 0) {
+		shared_data->image_loder.image_select -= 1;
+	}
+
+	pthread_mutex_unlock(&shared_data->image_loder.lock);
+}
+
+/**
+ * 画像を次へ
+*/
+void image_next() {
+	pthread_mutex_lock(&shared_data->image_loder.lock);
+
+	if ((shared_data->image_loder.image_select + 1) < shared_data->image_loder.image_count) {
+		shared_data->image_loder.image_select += 1;
+	}
+
+	pthread_mutex_unlock(&shared_data->image_loder.lock);
+}
+
+/**
  * キーを押下した
 */
 void on_key_press(int key, int mods) {
@@ -140,6 +166,12 @@ void on_key_press(int key, int mods) {
 		} else if (key == GLFW_KEY_RIGHT || key == GLFW_KEY_B) {
 			image_move(-IMAGE_KEY_MOVE, 0);
 
+		} else if (key == GLFW_KEY_COMMA) {
+			image_prev();
+
+		} else if (key == GLFW_KEY_PERIOD) {
+			image_next();
+
 		}
 	}
 }
@@ -171,6 +203,12 @@ void on_key_pressing(int key, int mods) {
 
 		} else if (key == GLFW_KEY_RIGHT || key == GLFW_KEY_B) {
 			image_move(-IMAGE_KEY_MOVE, 0);
+
+		} else if (key == GLFW_KEY_COMMA) {
+			image_prev();
+
+		} else if (key == GLFW_KEY_PERIOD) {
+			image_next();
 
 		}
 	}
