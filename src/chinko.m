@@ -114,7 +114,7 @@ void check_event_dd(UISharedData *shared) {
 		pthread_mutex_lock(&shared->image_loder.lock);
 
 		shared->image_loder.image_select = 0;
-		last_image_count = 0;
+		last_image_count = count;
 		last_image_select = 0;
 		shared->image_loder.image_count = count;
 
@@ -185,7 +185,9 @@ void check_event_dd(UISharedData *shared) {
 void check_image_select_switch(UISharedData *shared) {
 	pthread_mutex_lock(&shared->image_loder.lock);
 
-	if (last_image_select == shared->image_loder.image_select) {
+	uint64_t select = shared->image_loder.image_select;
+
+	if (last_image_select == select) {
 		//変更はなかった
 		pthread_mutex_unlock(&shared->image_loder.lock);
 		return;
@@ -197,10 +199,11 @@ void check_image_select_switch(UISharedData *shared) {
 		return;
 	}
 
-	switch_image(shared, shared->image_loder.image_select);
-	last_image_select = shared->image_loder.image_select;
+	last_image_select = select;
 
 	pthread_mutex_unlock(&shared->image_loder.lock);
+
+	switch_image(shared, select);
 }
 
 void *chinko_main(void *p) {
