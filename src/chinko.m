@@ -32,7 +32,13 @@ static void shared_title_update(UISharedData *shared, const char *title) {
 
 static void change_state(UISharedData *share, const char *state) {
 	char buffer[4096];
-	sprintf(buffer, "%s [%zu\\%zu](%s)", state, last_image_count, (last_image_select + 1), current_path);
+	#ifdef __APPLE__
+		sprintf(buffer, "%s [%llu\\%llu](%s)", state, last_image_count, (last_image_select + 1), current_path);
+	#endif
+	#if !defined(__APPLE__)
+		sprintf(buffer, "%s [%zu\\%zu](%s)", state, last_image_count, (last_image_select + 1), current_path);
+	#endif
+
 	shared_title_update(share, buffer);
 }
 
