@@ -8,6 +8,7 @@
 #import "../platform.h"
 
 #import "png.h"
+#import "apng.h"
 #import "jpeg.h"
 #import "webp.h"
 #import "gif.h"
@@ -91,7 +92,11 @@ static Image *load_image_impl(const char *path, bool *want_fallback) {
 
 	switch (type) {
 		case Image_PNG: {
-			image = load_png(f);
+			image = load_apng(f);
+			if (image == NULL) {
+				rewind(f);
+				image = load_png(f);
+			}
 			break;
 		}
 
