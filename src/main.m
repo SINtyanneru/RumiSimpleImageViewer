@@ -410,9 +410,9 @@ static int rsiv_main(int argc, char **argv) {
 		}
 
 		const char *path = [url.path UTF8String];
-		pthread_mutex_lock(&shared_image->dd.lock);
-		un_list_add(shared_image->dd.path_list, strdup(path));
-		pthread_mutex_unlock(&shared_image->dd.lock);
+		pthread_mutex_lock(&shared_data->dd.lock);
+		un_list_add(shared_data->dd.path_list, strdup(path));
+		pthread_mutex_unlock(&shared_data->dd.lock);
 	}
 }
 

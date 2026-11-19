@@ -127,7 +127,9 @@ void check_event_dd(UISharedData *shared) {
 		DIR *dir = opendir(parent_dir_path);
 		struct dirent *entry;
 		while ((entry = readdir(dir)) != NULL) {
-			if (entry->d_type != DT_REG) continue;
+			#ifndef _WIN32
+				if (entry->d_type != DT_REG) continue;
+			#endif
 
 			char full[4096];
 			snprintf(full, sizeof(full), "%s/%s", parent_dir_path, entry->d_name);
