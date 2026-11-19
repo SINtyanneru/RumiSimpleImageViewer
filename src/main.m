@@ -409,6 +409,7 @@ static int rsiv_main(int argc, char **argv) {
 
 		pthread_mutex_lock(&shared_data->dd.lock);
 		un_list_add(shared_data->dd.path_list, strdup(path));
+		shared_data->dd.version += 1;
 		pthread_mutex_unlock(&shared_data->dd.lock);
 	}
 
