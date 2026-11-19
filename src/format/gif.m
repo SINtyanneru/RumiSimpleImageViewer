@@ -2,11 +2,14 @@
 #import <stdlib.h>
 #import <gif_lib.h>
 #import <string.h>
+#import <unistd.h>
 
 #import "../rsiv.h"
 
 Image *load_gif(FILE *f) {
 	int err = 0;
+
+	lseek(fileno(f), 0, SEEK_SET);
 	GifFileType *gif = DGifOpenFileHandle(fileno(f), &err);
 
 	if (!gif) return NULL;
