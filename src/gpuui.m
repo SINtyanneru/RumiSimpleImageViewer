@@ -223,6 +223,8 @@ static void ui_loop(Image *img, UISharedData *shared, int32_t fw, int32_t fh) {
 		glClear(GL_COLOR_BUFFER_BIT);
 		glUniform2f(loc_win, (float)fw, (float)fh);
 
+		pthread_mutex_lock(&shared->uiitem_lock);
+
 		for (int i = 0; i < UIITEM_LENGTH; i++) {
 			UIItem *ui = &shared->item_list[i];
 			if (ui->type == UIItem_None) continue;
@@ -372,6 +374,8 @@ static void ui_loop(Image *img, UISharedData *shared, int32_t fw, int32_t fh) {
 				}
 			}
 		}
+
+		pthread_mutex_unlock(&shared->uiitem_lock);
 
 		//タイトルの更新検知
 		uint32_t title_v = __atomic_load_n(&shared->title_bar.version, __ATOMIC_SEQ_CST);

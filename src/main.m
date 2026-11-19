@@ -239,6 +239,8 @@ void on_dd(int count, const char **pathlp) {
 		if (pathlp[i] != NULL) un_list_add(shared_data->dd.path_list, pathlp[i]);
 	}
 
+	shared_data->dd.version += 1;
+
 	pthread_mutex_unlock(&shared_data->dd.lock);
 }
 
@@ -287,7 +289,6 @@ void main_loop() {
 static void init() {
 	//共有変数
 	shared_data = calloc(1, sizeof(UISharedData));
-	pthread_mutex_init(&shared_data->lock, NULL);
 
 	//ドラドロを初期化
 	pthread_mutex_init(&shared_data->dd.lock, NULL);
@@ -298,7 +299,11 @@ static void init() {
 	snprintf(shared_data->title_bar.title, sizeof(shared_data->title_bar.title), "%s", "RSIV - んご");
 	shared_data->title_bar.version = 0;
 
+	//画像ロードスレッド用
+	pthread_mutex_init(&shared_data->image_loder.lock, NULL);
+
 	//UIアイテムを初期化
+	pthread_mutex_init(&shared_data->uiitem_lock, NULL);
 	for (size_t i = 0; i < UIITEM_LENGTH; i++) {
 		shared_data->item_list[i].type = UIItem_None;
 	}
@@ -331,7 +336,10 @@ static void init() {
 */
 static int rsiv_main(int argc, char **argv) {
 	//引数
-	if (un_arg_count() >= 2) un_list_add(shared_data->dd.path_list, un_arg_get(1));
+	if (un_arg_count() >= 2) {
+		un_list_add(shared_data->dd.path_list, un_arg_get(1));
+		shared_data->dd.version += 1;
+	}
 
 	//別スレッドでちんこを開始
 	pthread_t ui_thread;
@@ -341,7 +349,6 @@ static int rsiv_main(int argc, char **argv) {
 	gpuui_main(shared_data);
 
 	pthread_join(ui_thread, NULL);
-	pthread_mutex_destroy(&shared_data->lock);
 
 	return 0;
 }

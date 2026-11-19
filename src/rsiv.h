@@ -79,6 +79,7 @@ typedef struct {
 typedef struct {
 	pthread_mutex_t lock;
 	UnStringList *path_list;
+	uint16_t version;
 } DD;
 
 typedef struct {
@@ -88,11 +89,21 @@ typedef struct {
 } TitleBar;
 
 typedef struct {
-	//画像データ
 	pthread_mutex_t lock;
+	uint64_t image_select;
+	uint64_t image_count;
+} ImageLoderData;
 
+typedef struct {
+	//画像ロードスレッドとの通信用
+	ImageLoderData image_loder;
+
+	//UIアイテム
+	pthread_mutex_t uiitem_lock;
 	UIItem item_list[UIITEM_LENGTH];
 
+	//ドラドロ
 	DD dd;
+	//タイトルバー
 	TitleBar title_bar;
 } UISharedData;

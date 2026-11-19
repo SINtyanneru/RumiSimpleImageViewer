@@ -11,18 +11,7 @@
 #import "main.h"
 
 static UnStringList *global_path_list;
-
-// static void shared_image_update(SharedImage *shared_image, Image *img) {
-// 	pthread_mutex_lock(&shared_image->lock);
-
-// 	shared_image->image = img;
-
-// 	atomic_fetch_add(&shared_image->version, 1);
-
-// 	pthread_mutex_unlock(&shared_image->lock);
-
-// 	glfwPostEmptyEvent();
-// }
+static uint16_t version = 0;
 
 static void shared_title_update(UISharedData *shared, const char *title) {
 	pthread_mutex_lock(&shared->title_bar.lock);
@@ -35,16 +24,44 @@ static void shared_title_update(UISharedData *shared, const char *title) {
 }
 
 void check_event_dd(UISharedData *shared) {
-	un_list_clear(global_path_list);
-
 	pthread_mutex_lock(&shared->dd.lock);
-	pthread_mutex_lock(&shared->lock);
 
+	if (shared->dd.version == version) {
+		//何もアクションがなかったのでここで終了
+		pthread_mutex_unlock(&shared->dd.lock);
+		return;
+	}
+
+	//パス一覧
 	UnStringList *path_list = shared->dd.path_list;
+	uint32_t count = (uint32_t) un_list_count(path_list);
 
-	int count = un_list_count(path_list);
-	for (int i = 0; i < count; i++) {
+	//パスをこっちのスレッドにコピーする
+	un_list_clear(global_path_list);
+	for (size_t i = 0; i < count; i++) {
 		const char *path = un_list_get(path_list, i);
+		un_list_add(global_path_list, path);
+	}
+	un_list_clear(shared->dd.path_list);
+
+	printf("元の数: %u\n", (uint32_t) un_list_count(path_list));
+	printf("コピーした数: %u\n", (uint32_t) un_list_count(global_path_list));
+
+	pthread_mutex_unlock(&shared->dd.lock);
+
+	//画像ローダー通信用に画像の枚数と、初期選択を設定する
+	pthread_mutex_lock(&shared->image_loder.lock);
+
+	shared->image_loder.image_select = 0;
+	shared->image_loder.image_count = count;
+
+	pthread_mutex_unlock(&shared->image_loder.lock);
+
+	//1枚目の画像を突っ込む
+	if (un_list_count(global_path_list) != 0) {
+		pthread_mutex_lock(&shared->uiitem_lock);
+
+		const char *path = un_list_get(global_path_list, 0);
 
 		UIItemImage *image = (UIItemImage *)shared->item_list[0].item;
 		image->img = *load_image(path);
@@ -56,15 +73,13 @@ void check_event_dd(UISharedData *shared) {
 
 		image_fit_center();
 
-		shared_title_update(shared, path);
+		pthread_mutex_unlock(&shared->uiitem_lock);
 
-		un_list_add(global_path_list, path);
+		//タイトル
+		shared_title_update(shared, path);
 	}
 
-	un_list_clear(shared->dd.path_list);
-
-	pthread_mutex_unlock(&shared->lock);
-	pthread_mutex_unlock(&shared->dd.lock);
+	version = shared->dd.version;
 }
 
 void *chinko_main(void *p) {
