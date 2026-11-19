@@ -1,6 +1,23 @@
 #import "UnFoundation.h"
 #import <stdint.h>
 #import <pthread.h>
+#import <GLFW/glfw3.h>
+
+#define UIITEM_LENGTH 16
+
+typedef enum {
+	Image_Unknown,
+	Image_PNG,
+	Image_JPEG,
+	Image_WEBP,
+	Image_GIF,
+	Image_Video,
+	Image_MAG,
+	Image_MAKI,
+	Image_BMP,
+	Image_PI,
+	Image_SVG
+} ImageType;
 
 typedef struct {
 	uint8_t r;
@@ -21,13 +38,62 @@ typedef struct {
 
 
 
+typedef enum {
+	UIItem_None,
+	UIItem_Rect,
+	UIItem_Image,
+	UIItem_Text
+} UIItemType;
 
+typedef struct {
+	UIItemType type;
+	void *item;
+} UIItem;
 
+typedef struct {
+	int32_t x;
+	int32_t y;
+	int32_t w;
+	int32_t h;
+	RGBA color;
 
+	uint64_t texture_version;
+	uint64_t texture_synced_version;
+	GLuint texture;
+} UIItemRect;
+
+typedef struct {
+	int32_t x;
+	int32_t y;
+	int32_t w;
+	int32_t h;
+	Image img;
+
+	uint64_t texture_version;
+	uint64_t texture_synced_version;
+	double anim_start;
+	int32_t cur_frame;
+	GLuint texture;
+} UIItemImage;
+
+typedef struct {
+	int32_t x;
+	int32_t y;
+	uint32_t size;
+	char *text;
+	RGBA color;
+
+	uint32_t texture_w;
+	uint32_t texture_h;
+	uint64_t texture_version;
+	uint64_t texture_synced_version;
+	GLuint texture;
+} UIItemText;
 
 typedef struct {
 	pthread_mutex_t lock;
 	UnStringList *path_list;
+	uint16_t version;
 } DD;
 
 typedef struct {
@@ -37,11 +103,21 @@ typedef struct {
 } TitleBar;
 
 typedef struct {
-	//画像データ
 	pthread_mutex_t lock;
-	uint32_t version;
-	Image *image;
+	uint64_t image_select;
+	uint64_t image_count;
+} ImageLoderData;
 
+typedef struct {
+	//画像ロードスレッドとの通信用
+	ImageLoderData image_loder;
+
+	//UIアイテム
+	pthread_mutex_t uiitem_lock;
+	UIItem item_list[UIITEM_LENGTH];
+
+	//ドラドロ
 	DD dd;
+	//タイトルバー
 	TitleBar title_bar;
-} SharedImage;
+} UISharedData;

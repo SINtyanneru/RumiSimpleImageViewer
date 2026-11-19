@@ -26,5 +26,6 @@ clang \
 	\
 	-lglfw3 -lglew32 -lopengl32 -lgdi32 -lpng -ljpeg -lwebp -lgif -lwebpdemux -lpthread -lshell32 \
 	$(pkg-config --cflags --libs librsvg-2.0) \
+	$(pkg-config --cflags --libs freetype2) \
 	-mwindows \
 	-o rsiv.exe

@@ -58,6 +58,11 @@ void un_list_clear(UnStringList *list) {
 	[list->array removeAllObjects];
 }
 
+void un_list_sort(UnStringList *list) {
+	un_ensure_pool();
+	[list->array sortUsingSelector:@selector(compare:)];
+}
+
 int un_arg_count(void) {
 	un_ensure_pool();
 	return (int)[[[NSProcessInfo processInfo] arguments] count];
