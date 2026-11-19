@@ -37,7 +37,7 @@ static const uint8_t FS_SRC[] = {
 
 //フォント
 static const uint8_t FONT[] = {
-	#embed "../uzura.ttf"
+	#embed "../UDEVGothic-Regular.ttf"
 };
 
 //頂点(フルスクリーンクアッド)
