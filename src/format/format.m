@@ -160,7 +160,7 @@ Image *load_image(const char *path) {
 	bool want_fallback = false;
 	Image *image = load_image_impl(path, &want_fallback);
 
-	if (image == NULL && want_fallback)
+	if (image == NULL)
 		image = make_fallback_image();
 
 	return image;
