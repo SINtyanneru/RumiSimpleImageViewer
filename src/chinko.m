@@ -16,6 +16,7 @@
 
 static UnStringList *global_path_list;
 static uint16_t version = 0;
+static uint64_t last_image_count = 0;
 static uint64_t last_image_select = 0;
 static char *current_path = NULL;
 
@@ -29,13 +30,17 @@ static void shared_title_update(UISharedData *shared, const char *title) {
 	pthread_mutex_unlock(&shared->title_bar.lock);
 }
 
+static void change_state(UISharedData *share, const char *state) {
+	char buffer[4096];
+	sprintf(buffer, "%s [%zu\\%zu](%s)", state, last_image_count, (last_image_select + 1), current_path);
+	shared_title_update(share, buffer);
+}
+
 static void switch_image(UISharedData *shared, uint64_t select) {
 	current_path = (char *)un_list_get(global_path_list, select);
-	char buffer[4096];
 
 	//タイトル
-	sprintf(buffer, "画像を解析中... [%s]", current_path);
-	shared_title_update(shared, buffer);
+	change_state(shared, "画像を解析中...");
 
 	//画像をロード
 	Image image = *load_image(current_path);
@@ -44,8 +49,7 @@ static void switch_image(UISharedData *shared, uint64_t select) {
 	pthread_mutex_lock(&shared->uiitem_lock);
 
 	//タイトル
-	sprintf(buffer, "メモリにロード中... [%s]", current_path);
-	shared_title_update(shared, buffer);
+	change_state(shared, "メモリにロード中...");
 
 	UIItemImage *image_item = (UIItemImage *)shared->item_list[0].item;
 	image_item->img = image;
@@ -60,8 +64,7 @@ static void switch_image(UISharedData *shared, uint64_t select) {
 	pthread_mutex_unlock(&shared->uiitem_lock);
 
 	//タイトル
-	sprintf(buffer, "[%s]", current_path);
-	shared_title_update(shared, buffer);
+	change_state(shared, "");
 }
 
 static void get_parent_dir(const char *path, char *out, size_t out_size) {
@@ -105,6 +108,7 @@ void check_event_dd(UISharedData *shared) {
 		pthread_mutex_lock(&shared->image_loder.lock);
 
 		shared->image_loder.image_select = 0;
+		last_image_count = 0;
 		last_image_select = 0;
 		shared->image_loder.image_count = count;
 
@@ -115,11 +119,7 @@ void check_event_dd(UISharedData *shared) {
 
 	//1枚だけ開かれた場合は、同じディレクトリに有る他の画像も漁る
 	if (un_list_count(global_path_list) == 1) {
-		char buffer[4096];
-
-		//タイトル
-		sprintf(buffer, "同一ディレクトリ内を探索中... [%s]", current_path);
-		shared_title_update(shared, buffer);
+		change_state(shared, "同一ディレクトリ内を探索中...");
 
 		char parent_dir_path[4096];
 		get_parent_dir(current_path, parent_dir_path, sizeof(parent_dir_path));
@@ -146,13 +146,13 @@ void check_event_dd(UISharedData *shared) {
 				//画像数を増やす
 				pthread_mutex_lock(&shared->image_loder.lock);
 				shared->image_loder.image_count += 1;
+				last_image_count += 1;
 				pthread_mutex_unlock(&shared->image_loder.lock);
 			}
 		}
 
 		//ソート
-		sprintf(buffer, "ソート中... [%s]", current_path);
-		shared_title_update(shared, buffer);
+		change_state(shared, "ソート中...");
 		un_list_sort(global_path_list);
 
 		//今選んでる画像が何枚目かを登録
@@ -168,8 +168,7 @@ void check_event_dd(UISharedData *shared) {
 		pthread_mutex_unlock(&shared->image_loder.lock);
 
 		//タイトル
-		sprintf(buffer, "[%s]", current_path);
-		shared_title_update(shared, buffer);
+		change_state(shared, "");
 	}
 
 	version = shared->dd.version;
